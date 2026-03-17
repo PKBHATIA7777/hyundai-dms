@@ -1,0 +1,21 @@
+### 1. Test Health Status (Public GET)
+### Should return: "Hyundai DMS Backend: Operational"
+GET http://localhost:8080/api/test/status
+
+###
+
+### 2. Test Admin Login (Public POST)
+### Should return: JSON with "token", "username", "role", etc.
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+    "username": "admin",
+    "password": "admin123"
+}
+
+###
+
+### 3. Test Root Access (Should return 403 Forbidden)
+### This confirms your security is working and blocking unauthorized paths.
+GET http://localhost:8080/

@@ -12,5 +12,10 @@ public class Role {
     private Long id;
 
     @Column(unique = true, nullable = false)
-    private String name; // e.g., ROLE_ADMIN, ROLE_DEALER
+    private String name;
+
+    // Manually add this to fix the error in UserDetailsImpl
+    public String getName() {
+        return name;
+    }
 }

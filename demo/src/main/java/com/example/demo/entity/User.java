@@ -24,10 +24,10 @@ public class User {
     @JoinColumn(name = "role_id")
     private Role role;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "dealer_id")
-    private Dealer dealer; // If null, user is a Nationwide Admin
-
-    private boolean locked = false;
-    private int loginAttempts = 0;
+    // Manually add these getters to satisfy UserDetailsImpl
+    public Long getId() { return id; }
+    public String getUsername() { return username; }
+    public String getEmail() { return email; }
+    public String getPassword() { return password; }
+    public Role getRole() { return role; }
 }
