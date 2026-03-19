@@ -2,6 +2,7 @@ package com.example.demo.entity;
 
 import jakarta.persistence.*;
 import java.util.Set;
+import java.util.HashSet;
 
 @Entity
 @Table(name = "variants")
@@ -26,7 +27,7 @@ public class Variant {
         joinColumns = @JoinColumn(name = "variant_id"),
         inverseJoinColumns = @JoinColumn(name = "colour_id")
     )
-    private Set<Colour> availableColours;
+    private Set<Colour> availableColours = new HashSet<>();
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }

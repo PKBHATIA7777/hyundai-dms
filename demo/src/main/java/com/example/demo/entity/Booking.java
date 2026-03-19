@@ -1,11 +1,9 @@
 package com.example.demo.entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
 import java.time.LocalDateTime;
 
 @Entity
-@Data
 @Table(name = "bookings")
 public class Booking {
     @Id
@@ -27,9 +25,31 @@ public class Booking {
     @Column(nullable = false)
     private Double bookingAmount;
 
-    private String paymentMode; // Cash, Card, Online, Cheque
-    
-    private String bookingStatus; // ACTIVE, CANCELLED, COMPLETED
-
+    private String paymentMode;
+    private String bookingStatus;
     private LocalDateTime bookingDate = LocalDateTime.now();
+
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public Lead getLead() { return lead; }
+    public void setLead(Lead lead) { this.lead = lead; }
+
+    public Variant getVariant() { return variant; }
+    public void setVariant(Variant variant) { this.variant = variant; }
+
+    public Colour getColour() { return colour; }
+    public void setColour(Colour colour) { this.colour = colour; }
+
+    public Double getBookingAmount() { return bookingAmount; }
+    public void setBookingAmount(Double bookingAmount) { this.bookingAmount = bookingAmount; }
+
+    public String getPaymentMode() { return paymentMode; }
+    public void setPaymentMode(String paymentMode) { this.paymentMode = paymentMode; }
+
+    public String getBookingStatus() { return bookingStatus; }
+    public void setBookingStatus(String bookingStatus) { this.bookingStatus = bookingStatus; }
+
+    public LocalDateTime getBookingDate() { return bookingDate; }
+    public void setBookingDate(LocalDateTime bookingDate) { this.bookingDate = bookingDate; }
 }

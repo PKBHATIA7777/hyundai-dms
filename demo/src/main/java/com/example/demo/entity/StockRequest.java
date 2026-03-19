@@ -1,11 +1,9 @@
 package com.example.demo.entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
 import java.time.LocalDateTime;
 
 @Entity
-@Data
 @Table(name = "stock_requests")
 public class StockRequest {
     @Id
@@ -25,8 +23,27 @@ public class StockRequest {
     private Colour colour;
 
     private Integer requestedQuantity;
-    
-    private String status; // PENDING, APPROVED, REJECTED, FULFILLED
-
+    private String status;
     private LocalDateTime requestDate = LocalDateTime.now();
+
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public Dealer getDealer() { return dealer; }
+    public void setDealer(Dealer dealer) { this.dealer = dealer; }
+
+    public Variant getVariant() { return variant; }
+    public void setVariant(Variant variant) { this.variant = variant; }
+
+    public Colour getColour() { return colour; }
+    public void setColour(Colour colour) { this.colour = colour; }
+
+    public Integer getRequestedQuantity() { return requestedQuantity; }
+    public void setRequestedQuantity(Integer requestedQuantity) { this.requestedQuantity = requestedQuantity; }
+
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+
+    public LocalDateTime getRequestDate() { return requestDate; }
+    public void setRequestDate(LocalDateTime requestDate) { this.requestDate = requestDate; }
 }

@@ -1,10 +1,8 @@
 package com.example.demo.entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
 
 @Entity
-@Data
 @Table(name = "dealer_inventory")
 public class DealerInventory {
     @Id
@@ -27,10 +25,27 @@ public class DealerInventory {
     private Integer stockQuantity = 0;
 
     @Column(nullable = false)
-    private Integer reservedQuantity = 0; // Cars booked but not yet delivered
+    private Integer reservedQuantity = 0;
 
-    // Helper method to get available stock
     public int getAvailableStock() {
         return stockQuantity - reservedQuantity;
     }
+
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public Dealer getDealer() { return dealer; }
+    public void setDealer(Dealer dealer) { this.dealer = dealer; }
+
+    public Variant getVariant() { return variant; }
+    public void setVariant(Variant variant) { this.variant = variant; }
+
+    public Colour getColour() { return colour; }
+    public void setColour(Colour colour) { this.colour = colour; }
+
+    public Integer getStockQuantity() { return stockQuantity; }
+    public void setStockQuantity(Integer stockQuantity) { this.stockQuantity = stockQuantity; }
+
+    public Integer getReservedQuantity() { return reservedQuantity; }
+    public void setReservedQuantity(Integer reservedQuantity) { this.reservedQuantity = reservedQuantity; }
 }
