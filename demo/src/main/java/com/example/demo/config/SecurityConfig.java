@@ -73,7 +73,7 @@ public class SecurityConfig {
 
             .cors(cors -> cors.configurationSource(request -> {
                 CorsConfiguration config = new CorsConfiguration();
-                config.setAllowedOrigins(Arrays.asList("http://localhost:5173"));
+                config.setAllowedOrigins(Arrays.asList("http://localhost:5174"));
                 config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
                 config.setAllowedHeaders(Arrays.asList("*"));
                 return config;
@@ -86,6 +86,8 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/test/**").permitAll()
+                .requestMatchers("/api/admin/**").hasAuthority("ROLE_ADMIN")
+                .requestMatchers("/api/dealer/**").hasAuthority("ROLE_DEALER")
                 .anyRequest().authenticated()
             );
 

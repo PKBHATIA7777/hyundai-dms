@@ -24,6 +24,10 @@ public class User {
     @JoinColumn(name = "role_id")
     private Role role;
 
+    @OneToOne
+    @JoinColumn(name = "dealer_id", nullable = true)
+    private Dealer dealer;
+
     @Column(name = "account_non_locked")
     private Boolean accountNonLocked = true;
 
@@ -32,8 +36,6 @@ public class User {
 
     @Column(name = "lock_time")
     private Date lockTime;
-
-    // --- Standard Getters and Setters ---
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -50,18 +52,21 @@ public class User {
     public Role getRole() { return role; }
     public void setRole(Role role) { this.role = role; }
 
-    public Boolean getAccountNonLocked() { 
-        return accountNonLocked != null ? accountNonLocked : true; 
+    public Dealer getDealer() { return dealer; }
+    public void setDealer(Dealer dealer) { this.dealer = dealer; }
+
+    public Boolean getAccountNonLocked() {
+        return accountNonLocked != null ? accountNonLocked : true;
     }
-    public void setAccountNonLocked(Boolean accountNonLocked) { 
-        this.accountNonLocked = accountNonLocked; 
+    public void setAccountNonLocked(Boolean accountNonLocked) {
+        this.accountNonLocked = accountNonLocked;
     }
 
-    public Integer getFailedAttempts() { 
-        return failedAttempts != null ? failedAttempts : 0; 
+    public Integer getFailedAttempts() {
+        return failedAttempts != null ? failedAttempts : 0;
     }
-    public void setFailedAttempts(Integer failedAttempts) { 
-        this.failedAttempts = failedAttempts; 
+    public void setFailedAttempts(Integer failedAttempts) {
+        this.failedAttempts = failedAttempts;
     }
 
     public Date getLockTime() { return lockTime; }

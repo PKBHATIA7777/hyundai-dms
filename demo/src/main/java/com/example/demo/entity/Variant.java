@@ -1,11 +1,9 @@
 package com.example.demo.entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
 import java.util.Set;
 
 @Entity
-@Data
 @Table(name = "variants")
 public class Variant {
     @Id
@@ -13,7 +11,10 @@ public class Variant {
     private Long id;
 
     @Column(nullable = false)
-    private String variantName; // e.g., 1.5 l MPi Petrol 6-Speed Manual SX
+    private String variantName;
+
+    @Column(nullable = false)
+    private Long price;
 
     @ManyToOne
     @JoinColumn(name = "car_id", nullable = false)
@@ -26,4 +27,19 @@ public class Variant {
         inverseJoinColumns = @JoinColumn(name = "colour_id")
     )
     private Set<Colour> availableColours;
+
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public String getVariantName() { return variantName; }
+    public void setVariantName(String variantName) { this.variantName = variantName; }
+
+    public Long getPrice() { return price; }
+    public void setPrice(Long price) { this.price = price; }
+
+    public Car getCar() { return car; }
+    public void setCar(Car car) { this.car = car; }
+
+    public Set<Colour> getAvailableColours() { return availableColours; }
+    public void setAvailableColours(Set<Colour> availableColours) { this.availableColours = availableColours; }
 }
