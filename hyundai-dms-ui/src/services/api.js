@@ -1,21 +1,31 @@
 import axios from 'axios';
 
-// Creating a classical Axios instance
 const api = axios.create({
-    baseURL: 'http://localhost:8080/api', // Matches your Spring Boot port
+    baseURL: 'http://localhost:8080/api',
 });
 
-// Interceptor to manually add the JWT token to every request
+// Request interceptor — add token
 api.interceptors.request.use(
     (config) => {
         const token = localStorage.getItem('token');
         if (token) {
-            // Standard "Bearer" token format for Spring Security
             config.headers['Authorization'] = 'Bearer ' + token;
         }
         return config;
     },
     (error) => {
+        return Promise.reject(error);
+    }
+);
+
+// Response interceptor — handle 401 (token expired)
+api.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (error.response?.status === 401) {
+            localStorage.clear();
+            window.location.href = '/login';
+        }
         return Promise.reject(error);
     }
 );
