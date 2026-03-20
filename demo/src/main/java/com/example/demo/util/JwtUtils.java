@@ -63,17 +63,24 @@ public class JwtUtils {
         }
     }
 
-    public boolean validateJwtToken(String authToken) {
-        try {
-            String[] parts = authToken.split("\\.");
-            if (parts.length != 3) return false;
-            
-            // Recreate signature to verify
-            String expectedSign = createSignature(parts[0] + "." + parts[1]);
-            return expectedSign.equals(parts[2]);
-        } catch (Exception e) {
-            logger.error("JWT validation error: {}", e.getMessage());
-            return false;
-        }
+ public boolean validateJwtToken(String authToken) {
+    try {
+        String[] parts = authToken.split("\\.");
+        if (parts.length != 3) return false;
+        
+        // Verify signature
+        String expectedSign = createSignature(parts[0] + "." + parts[1]);
+        if (!expectedSign.equals(parts[2])) return false;
+        
+        // Check expiry
+        String payload = new String(Base64.getUrlDecoder().decode(parts[1]), StandardCharsets.UTF_8);
+        String expStr = payload.split("\"exp\":")[1].split("[,}]")[0].trim();
+        long exp = Long.parseLong(expStr);
+        return System.currentTimeMillis() / 1000 < exp;
+        
+    } catch (Exception e) {
+        logger.error("JWT validation error: {}", e.getMessage());
+        return false;
     }
+}
 }

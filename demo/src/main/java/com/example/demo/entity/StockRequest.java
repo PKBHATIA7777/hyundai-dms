@@ -26,6 +26,9 @@ public class StockRequest {
     private String status;
     private LocalDateTime requestDate = LocalDateTime.now();
 
+    @Column(columnDefinition = "TEXT")
+    private String notes;
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -46,4 +49,7 @@ public class StockRequest {
 
     public LocalDateTime getRequestDate() { return requestDate; }
     public void setRequestDate(LocalDateTime requestDate) { this.requestDate = requestDate; }
+
+    public String getNotes() { return notes; }
+    public void setNotes(String notes) { this.notes = notes; }
 }

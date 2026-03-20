@@ -86,6 +86,12 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/test/**").permitAll()
+                
+                // 🔥 Allow dealers to READ cars/colours for stock request dropdowns
+                .requestMatchers(HttpMethod.GET, "/api/admin/cars").hasAnyAuthority("ROLE_ADMIN", "ROLE_DEALER")
+                .requestMatchers(HttpMethod.GET, "/api/admin/colours").hasAnyAuthority("ROLE_ADMIN", "ROLE_DEALER")
+                
+                // Admin-only write access + other admin endpoints
                 .requestMatchers("/api/admin/**").hasAuthority("ROLE_ADMIN")
                 .requestMatchers("/api/dealer/**").hasAuthority("ROLE_DEALER")
                 .anyRequest().authenticated()
