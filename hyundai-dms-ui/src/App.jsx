@@ -3,7 +3,9 @@ import Login from './pages/Login';
 import AdminDashboard from './pages/admin/Dashboard';
 import DealerManagement from './pages/admin/DealerManagement';
 import CarCatalogue from './pages/admin/CarCatalogue';
+import InventoryManagement from './pages/admin/InventoryManagement';
 import DealerDashboard from './pages/dealer/Dashboard';
+import DealerInventory from './pages/dealer/Inventory';
 import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
@@ -28,11 +30,21 @@ function App() {
             <CarCatalogue />
           </ProtectedRoute>
         } />
+        <Route path="/admin/inventory" element={
+          <ProtectedRoute role="ROLE_ADMIN">
+            <InventoryManagement />
+          </ProtectedRoute>
+        } />
 
         {/* Dealer Routes */}
         <Route path="/dealer/dashboard" element={
           <ProtectedRoute role="ROLE_DEALER">
             <DealerDashboard />
+          </ProtectedRoute>
+        } />
+        <Route path="/dealer/inventory" element={
+          <ProtectedRoute role="ROLE_DEALER">
+            <DealerInventory />
           </ProtectedRoute>
         } />
 

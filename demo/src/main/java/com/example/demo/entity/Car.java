@@ -2,6 +2,7 @@ package com.example.demo.entity;
 
 import jakarta.persistence.*;
 import java.util.List;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "cars")
@@ -13,6 +14,7 @@ public class Car {
     @Column(nullable = false, unique = true)
     private String modelName;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "car", cascade = CascadeType.ALL)
     private List<Variant> variants;
 

@@ -1,11 +1,9 @@
 ### 1. Test Health Status (Public GET)
-### Should return: "Hyundai DMS Backend: Operational"
 GET http://localhost:8080/api/test/status
 
 ###
 
-### 2. Test Admin Login (Public POST)
-### Should return: JSON with "token", "username", "role", etc.
+### 2. Admin Login — copy the token from response
 POST http://localhost:8080/api/auth/login
 Content-Type: application/json
 
@@ -16,6 +14,85 @@ Content-Type: application/json
 
 ###
 
-### 3. Test Root Access (Should return 403 Forbidden)
-### This confirms your security is working and blocking unauthorized paths.
-GET http://localhost:8080/
+### 3. ADMIN — Add stock to Hyundai Chennai (dealerId=2)
+### Paste your token below after Bearer
+POST http://localhost:8080/api/admin/inventory/add
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTc3Mzk4NDQyOSwiZXhwIjoxNzc0MDcwODI5fQ.a-5UsnWpWSbO9vTN1hPdnJHNVj40xhLJyhZa2OETVf8
+
+{
+    "dealerId": 2,
+    "variantId": 1,
+    "colourId": 1,
+    "quantity": 5
+}
+
+###
+
+### 4. ADMIN — Add same stock again (should INCREASE quantity, not create new row)
+POST http://localhost:8080/api/admin/inventory/add
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTc3Mzk4NDQyOSwiZXhwIjoxNzc0MDcwODI5fQ.a-5UsnWpWSbO9vTN1hPdnJHNVj40xhLJyhZa2OETVf8
+
+{
+    "dealerId": 2,
+    "variantId": 1,
+    "colourId": 1,
+    "quantity": 3
+}
+
+###
+
+### 5. ADMIN — Try adding zero quantity (should FAIL with error)
+POST http://localhost:8080/api/admin/inventory/add
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTc3Mzk4NDQyOSwiZXhwIjoxNzc0MDcwODI5fQ.a-5UsnWpWSbO9vTN1hPdnJHNVj40xhLJyhZa2OETVf8
+
+{
+    "dealerId": 2,
+    "variantId": 1,
+    "colourId": 1,
+    "quantity": 0
+}
+
+###
+
+### 6. ADMIN — View inventory of Hyundai Chennai (dealerId=2)
+GET http://localhost:8080/api/admin/inventory/2
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTc3Mzk4NDQyOSwiZXhwIjoxNzc0MDcwODI5fQ.a-5UsnWpWSbO9vTN1hPdnJHNVj40xhLJyhZa2OETVf8
+
+###
+
+### 7. ADMIN — Try wrong dealerId (should FAIL with error)
+GET http://localhost:8080/api/admin/inventory/999
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTc3Mzk4NDQyOSwiZXhwIjoxNzc0MDcwODI5fQ.a-5UsnWpWSbO9vTN1hPdnJHNVj40xhLJyhZa2OETVf8
+
+
+
+
+
+### Reset HC@101 password
+PUT http://localhost:8080/api/admin/dealers/2/reset-password
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTc3Mzk4NDQyOSwiZXhwIjoxNzc0MDcwODI5fQ.a-5UsnWpWSbO9vTN1hPdnJHNVj40xhLJyhZa2OETVf8
+
+
+### 8. Dealer Login — HC@101 (Hyundai Chennai)
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+    "username": "HC@101",
+    "password": "890394"
+}
+
+###
+
+### 9. DEALER — View own inventory (use token from test 8)
+GET http://localhost:8080/api/dealer/inventory
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJIQ0AxMDEiLCJpYXQiOjE3NzM5ODg4OTksImV4cCI6MTc3NDA3NTI5OX0.Wguqj9C-_SENcqSD0851mDp8likomqO7kUbSG0o4SMA
+
+###
+
+### 10. DEALER — Try accessing admin endpoint (should FAIL with 403)
+GET http://localhost:8080/api/admin/inventory/2
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJIQ0AxMDEiLCJpYXQiOjE3NzM5ODg4OTksImV4cCI6MTc3NDA3NTI5OX0.Wguqj9C-_SENcqSD0851mDp8likomqO7kUbSG0o4SMA

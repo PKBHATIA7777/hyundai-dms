@@ -1,5 +1,6 @@
 package com.example.demo.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.util.Set;
 import java.util.HashSet;
@@ -17,6 +18,7 @@ public class Variant {
     @Column(nullable = false)
     private Long price;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "car_id", nullable = false)
     private Car car;

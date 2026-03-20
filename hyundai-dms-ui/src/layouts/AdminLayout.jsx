@@ -55,6 +55,11 @@ const AdminLayout = ({ children }) => {
             <span className="nav-icon">◉</span>
             {!collapsed && <span className="nav-label">Car Catalogue</span>}
           </NavLink>
+
+          <NavLink to="/admin/inventory" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+            <span className="nav-icon">▦</span>
+            {!collapsed && <span className="nav-label">Inventory</span>}
+          </NavLink>
         </nav>
 
         <div className="sidebar-footer">

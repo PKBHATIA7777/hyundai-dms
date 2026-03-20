@@ -44,6 +44,10 @@ const DealerLayout = ({ children }) => {
             <span className="nav-icon">▣</span>
             {!collapsed && <span className="nav-label">Dashboard</span>}
           </NavLink>
+          <NavLink to="/dealer/inventory" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+            <span className="nav-icon">▦</span>
+            {!collapsed && <span className="nav-label">Inventory</span>}
+          </NavLink>
         </nav>
 
         <div className="sidebar-footer">

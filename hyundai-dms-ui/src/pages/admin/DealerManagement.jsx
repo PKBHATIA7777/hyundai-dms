@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import AdminLayout from '../../layouts/AdminLayout';
 import api from '../../services/api';
 import './DealerManagement.css';
@@ -15,6 +16,7 @@ const DealerManagement = () => {
   const [form, setForm] = useState({
     name: '', city: '', contactNumber: '', address: '', email: ''
   });
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchDealers();
@@ -81,6 +83,10 @@ const DealerManagement = () => {
     } catch {
       setError('Failed to reset password.');
     }
+  };
+
+  const handleAddStock = (dealer) => {
+    navigate(`/admin/inventory?dealerId=${dealer.id}&dealerName=${encodeURIComponent(dealer.name)}`);
   };
 
   const handleCopy = () => {
@@ -157,6 +163,12 @@ const DealerManagement = () => {
                           onClick={() => handleResetPassword(dealer.id)}
                         >
                           Reset Password
+                        </button>
+                        <button
+                          className="btn-sm btn-primary"
+                          onClick={() => handleAddStock(dealer)}
+                        >
+                          Add Stock
                         </button>
                       </td>
                     </tr>
