@@ -50,7 +50,18 @@ const DealerLayout = ({ children }) => {
             {!collapsed && <span className="nav-label">Inventory</span>}
           </NavLink>
 
-          {/* ✅ NEW NAV ITEM ADDED */}
+          {/* ✅ NEW LEADS NAV ITEM */}
+          <NavLink to="/dealer/leads" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+            <span className="nav-icon">◎</span>
+            {!collapsed && <span className="nav-label">Leads</span>}
+          </NavLink>
+
+
+          <NavLink to="/dealer/bookings" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+    <span className="nav-icon">✦</span>
+    {!collapsed && <span className="nav-label">Bookings</span>}
+</NavLink>
+
           <NavLink to="/dealer/stock-requests" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
             <span className="nav-icon">↑</span>
             {!collapsed && <span className="nav-label">Request Stock</span>}

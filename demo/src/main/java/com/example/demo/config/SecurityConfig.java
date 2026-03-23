@@ -100,9 +100,17 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/dealer/stock-requests/**").hasAuthority("ROLE_DEALER")
                 .requestMatchers(HttpMethod.GET, "/api/dealer/invoices/**").hasAuthority("ROLE_DEALER")
 
+                // ✅ NEW: Dealer lead endpoints (added BEFORE catch-all)
+                .requestMatchers(HttpMethod.POST, "/api/dealer/leads").hasAuthority("ROLE_DEALER")
+                .requestMatchers(HttpMethod.GET, "/api/dealer/leads").hasAuthority("ROLE_DEALER")
+                .requestMatchers(HttpMethod.PUT, "/api/dealer/leads/**").hasAuthority("ROLE_DEALER")
+
                 // Admin-only write access + other admin endpoints
                 .requestMatchers("/api/admin/**").hasAuthority("ROLE_ADMIN")
+
+                // Catch-all dealer routes (kept LAST)
                 .requestMatchers("/api/dealer/**").hasAuthority("ROLE_DEALER")
+
                 .anyRequest().authenticated()
             );
 

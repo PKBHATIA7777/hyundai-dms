@@ -242,3 +242,308 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJIQ0AxMDEiL
 ### 26. ADMIN — Check dealer inventory increased after approval
 GET http://localhost:8080/api/admin/inventory/2
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTc3NDI0ODM2OCwiZXhwIjoxNzc0MzM0NzY4fQ.M1T-IP8fPyNhIujpfa0O5RoQ-1e90uFXoq_jq1hPcZk
+
+
+
+
+
+### ============================================
+### DAY 7 — LEAD TESTS
+### ============================================
+
+### 27. Dealer Login (get fresh token)
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+    "username": "HC@101",
+    "password": "890394"
+}
+
+###
+
+### 28. DEALER — Create a new lead (new customer)
+POST http://localhost:8080/api/dealer/leads
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJIQ0AxMDEiLCJpYXQiOjE3NzQyNjMxNjQsImV4cCI6MTc3NDM0OTU2NH0.9Up2lAkXOSGZrAJCf68FX0VfucR9_1Y0jDXqE8aWigw
+
+{
+    "firstName": "Rahul",
+    "lastName": "Kumar",
+    "phone": "9876543210",
+    "email": "rahul@email.com",
+    "address": "Chennai",
+    "source": "Walk-in",
+    "notes": "Interested in Creta"
+}
+
+###
+
+### 29. DEALER — Create another lead (different customer)
+POST http://localhost:8080/api/dealer/leads
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJIQ0AxMDEiLCJpYXQiOjE3NzQyNjMxNjQsImV4cCI6MTc3NDM0OTU2NH0.9Up2lAkXOSGZrAJCf68FX0VfucR9_1Y0jDXqE8aWigw
+
+{
+    "firstName": "Priya",
+    "lastName": "Sharma",
+    "phone": "9123456780",
+    "email": "priya@email.com",
+    "address": "Mumbai",
+    "source": "Phone",
+    "notes": "Looking for Verna"
+}
+
+###
+
+### 30. DEALER — Try duplicate lead (same phone, same dealer — should FAIL)
+POST http://localhost:8080/api/dealer/leads
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJIQ0AxMDEiLCJpYXQiOjE3NzQyNjMxNjQsImV4cCI6MTc3NDM0OTU2NH0.9Up2lAkXOSGZrAJCf68FX0VfucR9_1Y0jDXqE8aWigw
+
+{
+    "firstName": "Rahul",
+    "lastName": "Kumar",
+    "phone": "9876543210",
+    "email": "rahul@email.com",
+    "source": "Walk-in",
+    "notes": "This should fail"
+}
+
+###
+
+### 31. DEALER — Create lead with variantId (interested in specific variant)
+POST http://localhost:8080/api/dealer/leads
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJIQ0AxMDEiLCJpYXQiOjE3NzQyNjMxNjQsImV4cCI6MTc3NDM0OTU2NH0.9Up2lAkXOSGZrAJCf68FX0VfucR9_1Y0jDXqE8aWigw
+
+{
+    "firstName": "Arjun",
+    "lastName": "Mehta",
+    "phone": "9000011111",
+    "email": "arjun@email.com",
+    "source": "Referral",
+    "variantId": 1,
+    "notes": "Referred by existing customer"
+}
+
+###
+
+### 32. DEALER — Get all leads
+GET http://localhost:8080/api/dealer/leads
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJIQ0AxMDEiLCJpYXQiOjE3NzQyNjMxNjQsImV4cCI6MTc3NDM0OTU2NH0.9Up2lAkXOSGZrAJCf68FX0VfucR9_1Y0jDXqE8aWigw
+
+###
+
+### 33. DEALER — Get leads filtered by status NEW
+GET http://localhost:8080/api/dealer/leads?status=NEW
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJIQ0AxMDEiLCJpYXQiOjE3NzQyNjMxNjQsImV4cCI6MTc3NDM0OTU2NH0.9Up2lAkXOSGZrAJCf68FX0VfucR9_1Y0jDXqE8aWigw
+
+###
+
+### 34. DEALER — Update lead 1 status to CONTACTED
+PUT http://localhost:8080/api/dealer/leads/1/status
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJIQ0AxMDEiLCJpYXQiOjE3NzQyNjMxNjQsImV4cCI6MTc3NDM0OTU2NH0.9Up2lAkXOSGZrAJCf68FX0VfucR9_1Y0jDXqE8aWigw
+
+{
+    "status": "CONTACTED"
+}
+
+###
+
+### 35. DEALER — Update lead 1 status to INTERESTED
+PUT http://localhost:8080/api/dealer/leads/1/status
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJIQ0AxMDEiLCJpYXQiOjE3NzQyNjMxNjQsImV4cCI6MTc3NDM0OTU2NH0.9Up2lAkXOSGZrAJCf68FX0VfucR9_1Y0jDXqE8aWigw
+
+{
+    "status": "INTERESTED"
+}
+
+###
+
+### 36. DEALER — Update lead 1 status to LOST
+PUT http://localhost:8080/api/dealer/leads/1/status
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJIQ0AxMDEiLCJpYXQiOjE3NzQyNjMxNjQsImV4cCI6MTc3NDM0OTU2NH0.9Up2lAkXOSGZrAJCf68FX0VfucR9_1Y0jDXqE8aWigw
+
+{
+    "status": "LOST"
+}
+
+###
+
+### 37. DEALER — Try updating LOST lead again (should FAIL)
+PUT http://localhost:8080/api/dealer/leads/1/status
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJIQ0AxMDEiLCJpYXQiOjE3NzQyNjMxNjQsImV4cCI6MTc3NDM0OTU2NH0.9Up2lAkXOSGZrAJCf68FX0VfucR9_1Y0jDXqE8aWigw
+
+{
+    "status": "CONTACTED"
+}
+
+###
+
+### 38. DEALER — Try invalid status (should FAIL)
+PUT http://localhost:8080/api/dealer/leads/1/status
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJIQ0AxMDEiLCJpYXQiOjE3NzQyNjMxNjQsImV4cCI6MTc3NDM0OTU2NH0.9Up2lAkXOSGZrAJCf68FX0VfucR9_1Y0jDXqE8aWigw
+
+{
+    "status": "RANDOM_STATUS"
+}
+
+###
+
+### 39. DEALER — Get leads filtered by status LOST
+GET http://localhost:8080/api/dealer/leads?status=LOST
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJIQ0AxMDEiLCJpYXQiOjE3NzQyNjMxNjQsImV4cCI6MTc3NDM0OTU2NH0.9Up2lAkXOSGZrAJCf68FX0VfucR9_1Y0jDXqE8aWigw
+
+
+
+
+
+### 40. Check what variants exist in DB
+GET http://localhost:8080/api/admin/cars
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJIQ0AxMDEiLCJpYXQiOjE3NzQyNjMxNjQsImV4cCI6MTc3NDM0OTU2NH0.9Up2lAkXOSGZrAJCf68FX0VfucR9_1Y0jDXqE8aWigw
+
+
+
+
+### 31 FIXED
+POST http://localhost:8080/api/dealer/leads
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJIQ0AxMDEiLCJpYXQiOjE3NzQyNjMxNjQsImV4cCI6MTc3NDM0OTU2NH0.9Up2lAkXOSGZrAJCf68FX0VfucR9_1Y0jDXqE8aWigw
+
+{
+    "firstName": "Arjun",
+    "lastName": "Mehta",
+    "phone": "9000022222",
+    "email": "arjun2@email.com",
+    "source": "Referral",
+    "variantId": 1,
+    "notes": "Referred by existing customer"
+}
+
+
+
+
+
+### ============================================
+### DAY 7 — BOOKING TESTS
+### ============================================
+
+
+
+
+### 42 DEBUG
+POST http://localhost:8080/api/dealer/bookings
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJIQ0AxMDEiLCJpYXQiOjE3NzQyNjM4NTMsImV4cCI6MTc3NDM1MDI1M30.ABdeFta9a6De4v5U-nzp0-7I6wPkX-J_rIzJRaXeVDc
+
+{
+    "phone": "9876543210",
+    "variantId": 1,
+    "colourId": 1,
+    "advanceAmount": 50000,
+    "paymentMode": "Cash",
+    "notes": "Customer wants delivery in 2 weeks",
+    "leadId": 1
+}
+
+
+
+
+### 42. DEALER — Create booking from a lead (use leadId from test 28)
+POST http://localhost:8080/api/dealer/bookings
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJIQ0AxMDEiLCJpYXQiOjE3NzQyNjM4NTMsImV4cCI6MTc3NDM1MDI1M30.ABdeFta9a6De4v5U-nzp0-7I6wPkX-J_rIzJRaXeVDc
+
+{
+    "phone": "9876543210",
+    "variantId": 1,
+    "colourId": 1,
+    "advanceAmount": 50000,
+    "paymentMode": "Cash",
+    "notes": "Customer wants delivery in 2 weeks",
+    "leadId": 1
+}
+
+###
+
+### 43. DEALER — Create booking without lead (walk-in customer)
+POST http://localhost:8080/api/dealer/bookings
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJIQ0AxMDEiLCJpYXQiOjE3NzQyNjM4NTMsImV4cCI6MTc3NDM1MDI1M30.ABdeFta9a6De4v5U-nzp0-7I6wPkX-J_rIzJRaXeVDc
+
+{
+    "firstName": "Sneha",
+    "lastName": "Patel",
+    "phone": "9111122222",
+    "email": "sneha@email.com",
+    "address": "Pune",
+    "variantId": 1,
+    "colourId": 1,
+    "advanceAmount": 25000,
+    "paymentMode": "UPI",
+    "notes": "Walk-in customer"
+}
+
+###
+
+### 44. DEALER — Try booking with zero advance (should FAIL)
+POST http://localhost:8080/api/dealer/bookings
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJIQ0AxMDEiLCJpYXQiOjE3NzQyNjM4NTMsImV4cCI6MTc3NDM1MDI1M30.ABdeFta9a6De4v5U-nzp0-7I6wPkX-J_rIzJRaXeVDc
+
+{
+    "phone": "9111133333",
+    "firstName": "Test",
+    "lastName": "User",
+    "variantId": 1,
+    "colourId": 1,
+    "advanceAmount": 0,
+    "paymentMode": "Cash"
+}
+
+###
+
+### 45. DEALER — Try booking with no stock (use a variant+colour with no inventory)
+POST http://localhost:8080/api/dealer/bookings
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJIQ0AxMDEiLCJpYXQiOjE3NzQyNjM4NTMsImV4cCI6MTc3NDM1MDI1M30.ABdeFta9a6De4v5U-nzp0-7I6wPkX-J_rIzJRaXeVDc
+
+{
+    "firstName": "No",
+    "lastName": "Stock",
+    "phone": "9999988888",
+    "variantId": 2,
+    "colourId": 1,
+    "advanceAmount": 10000,
+    "paymentMode": "Cash"
+}
+
+###
+
+### 46. DEALER — Get all bookings
+GET http://localhost:8080/api/dealer/bookings
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJIQ0AxMDEiLCJpYXQiOjE3NzQyNjM4NTMsImV4cCI6MTc3NDM1MDI1M30.ABdeFta9a6De4v5U-nzp0-7I6wPkX-J_rIzJRaXeVDc
+
+###
+
+### 47. DEALER — Get bookings filtered by status CONFIRMED
+GET http://localhost:8080/api/dealer/bookings?status=CONFIRMED
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJIQ0AxMDEiLCJpYXQiOjE3NzQyNjM4NTMsImV4cCI6MTc3NDM1MDI1M30.ABdeFta9a6De4v5U-nzp0-7I6wPkX-J_rIzJRaXeVDc
+
+###
+
+### 48. DEALER — Get single booking by ID
+GET http://localhost:8080/api/dealer/bookings/1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJIQ0AxMDEiLCJpYXQiOjE3NzQyNjM4NTMsImV4cCI6MTc3NDM1MDI1M30.ABdeFta9a6De4v5U-nzp0-7I6wPkX-J_rIzJRaXeVDc
+
+###
+
+### 49. ADMIN — Check dealer inventory — reserved should have increased
+GET http://localhost:8080/api/admin/inventory/2
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTc3NDI2NDIwMiwiZXhwIjoxNzc0MzUwNjAyfQ.pUKRTbUEKa_vk0SpLWPI9tTccQ_rPv5BCjkT4--Hp0U

@@ -8,7 +8,9 @@ import AdminStockRequests from './pages/admin/StockRequests'; // ✅ ADDED
 import DealerDashboard from './pages/dealer/Dashboard';
 import DealerInventory from './pages/dealer/Inventory';
 import DealerStockRequest from './pages/dealer/StockRequest'; // ✅ ADDED
+import DealerLeads from './pages/dealer/Leads'; // ✅ NEW IMPORT
 import ProtectedRoute from './components/ProtectedRoute';
+import DealerBookings from './pages/dealer/Bookings';
 
 function App() {
   return (
@@ -57,12 +59,25 @@ function App() {
           </ProtectedRoute>
         } />
 
-        {/* ✅ NEW ROUTE ADDED */}
+        {/* ✅ STOCK REQUEST ROUTE */}
         <Route path="/dealer/stock-requests" element={
           <ProtectedRoute role="ROLE_DEALER">
             <DealerStockRequest />
           </ProtectedRoute>
         } />
+
+        {/* ✅ NEW LEADS ROUTE */}
+        <Route path="/dealer/leads" element={
+          <ProtectedRoute role="ROLE_DEALER">
+            <DealerLeads />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/dealer/bookings" element={
+    <ProtectedRoute role="ROLE_DEALER">
+        <DealerBookings />
+    </ProtectedRoute>
+} />
 
         {/* Default */}
         <Route path="*" element={<Navigate to="/login" />} />

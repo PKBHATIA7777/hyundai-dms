@@ -1,11 +1,10 @@
 package com.example.demo.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "customers")
-public class Customer {
+@Table(name = "employees")
+public class Employee {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -17,17 +16,17 @@ public class Customer {
     @Column(nullable = false)
     private String lastName;
 
-    // Primary identifier — must be unique
-    @Column(unique = true, nullable = false)
     private String phone;
-
-    @Column(unique = true)
     private String email;
+    private String designation;
 
-    private String address;
+    // Which dealer this employee belongs to
+    @ManyToOne
+    @JoinColumn(name = "dealer_id", nullable = false)
+    private Dealer dealer;
 
-    // PAN number for loan/insurance purposes
-    private String panNumber;
+    @Column(nullable = false)
+    private String status = "ACTIVE";
 
     // Getters and Setters
 
@@ -46,15 +45,12 @@ public class Customer {
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
 
-    public String getAddress() { return address; }
-    public void setAddress(String address) { this.address = address; }
+    public String getDesignation() { return designation; }
+    public void setDesignation(String designation) { this.designation = designation; }
 
-    public String getPanNumber() { return panNumber; }
-    public void setPanNumber(String panNumber) { this.panNumber = panNumber; }
+    public Dealer getDealer() { return dealer; }
+    public void setDealer(Dealer dealer) { this.dealer = dealer; }
 
-    // Convenience method — used in booking responses
-    @Transient
-    public String getFullName() {
-        return firstName + " " + lastName;
-    }
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
 }
