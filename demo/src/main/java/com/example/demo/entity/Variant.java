@@ -1,6 +1,6 @@
 package com.example.demo.entity;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties; // ✅ Added
 import jakarta.persistence.*;
 import java.util.Set;
 import java.util.HashSet;
@@ -18,7 +18,7 @@ public class Variant {
     @Column(nullable = false)
     private Long price;
 
-    @JsonBackReference
+    @JsonIgnoreProperties({"variants", "hibernateLazyInitializer", "handler"}) // ✅ Updated
     @ManyToOne
     @JoinColumn(name = "car_id", nullable = false)
     private Car car;

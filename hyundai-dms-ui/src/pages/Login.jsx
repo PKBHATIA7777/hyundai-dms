@@ -7,6 +7,7 @@ const Login = () => {
   const [credentials, setCredentials] = useState({ username: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false); // ✅ Added
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -23,18 +24,24 @@ const Login = () => {
       const response = await api.post('/auth/login', credentials);
       const { token, role, username, email, dealerStatus } = response.data;
 
+      // Store everything in localStorage
       localStorage.setItem('token', token);
       localStorage.setItem('role', role);
       localStorage.setItem('username', username);
       localStorage.setItem('email', email);
+
+      // ✅ Added login timestamp (NEW CHANGE)
+      localStorage.setItem('loginTime', Date.now().toString());
+
       if (dealerStatus) {
         localStorage.setItem('dealerStatus', dealerStatus);
       }
 
+      // ✅ Updated navigation with replace: true (NEW CHANGE)
       if (role === 'ROLE_ADMIN') {
-        navigate('/admin/dashboard');
+        navigate('/admin/dashboard', { replace: true });
       } else if (role === 'ROLE_DEALER') {
-        navigate('/dealer/dashboard');
+        navigate('/dealer/dashboard', { replace: true });
       }
 
     } catch (err) {
@@ -89,17 +96,41 @@ const Login = () => {
               />
             </div>
 
+            {/* ✅ Updated Password Field */}
             <div className="form-group">
               <label htmlFor="password">Password</label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                placeholder="Enter your password"
-                value={credentials.password}
-                onChange={handleChange}
-                required
-              />
+              <div style={{ position: 'relative' }}>
+                <input
+                  id="password"
+                  name="password"
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="Enter your password"
+                  value={credentials.password}
+                  onChange={handleChange}
+                  required
+                  style={{ width: '100%', paddingRight: '44px' }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  style={{
+                    position: 'absolute',
+                    right: '12px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    color: 'var(--grey-text)',
+                    fontSize: '16px',
+                    padding: '0',
+                    lineHeight: '1'
+                  }}
+                  tabIndex={-1}
+                >
+                  {showPassword ? '🙈' : '👁'}
+                </button>
+              </div>
             </div>
 
             {error && (

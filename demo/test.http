@@ -96,3 +96,149 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJIQ0AxMDEiL
 ### 10. DEALER — Try accessing admin endpoint (should FAIL with 403)
 GET http://localhost:8080/api/admin/inventory/2
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJIQ0AxMDEiLCJpYXQiOjE3NzM5ODg4OTksImV4cCI6MTc3NDA3NTI5OX0.Wguqj9C-_SENcqSD0851mDp8likomqO7kUbSG0o4SMA
+
+
+
+
+
+
+### 11. Dealer Login (get fresh token first)
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+    "username": "HC@101",
+    "password": "890394"
+}
+
+###
+
+### 12. DEALER — Create Stock Request (paste dealer token below)
+POST http://localhost:8080/api/dealer/stock-requests
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJIQ0AxMDEiLCJpYXQiOjE3NzQyNDY0MDcsImV4cCI6MTc3NDMzMjgwN30.xAYkFwIYMiVgN2BhPM9_gyZ1qlR_VpQJoEGc4mhyy60
+
+{
+    "variantId": 1,
+    "colourId": 1,
+    "requestedQuantity": 3,
+    "notes": "Urgent requirement"
+}
+
+###
+
+### 13. DEALER — Get My Stock Requests
+GET http://localhost:8080/api/dealer/stock-requests
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJIQ0AxMDEiLCJpYXQiOjE3NzQyNDY0MDcsImV4cCI6MTc3NDMzMjgwN30.xAYkFwIYMiVgN2BhPM9_gyZ1qlR_VpQJoEGc4mhyy60
+
+###
+
+### 14. DEALER — Try zero quantity (should FAIL)
+POST http://localhost:8080/api/dealer/stock-requests
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJIQ0AxMDEiLCJpYXQiOjE3NzQyNDY0MDcsImV4cCI6MTc3NDMzMjgwN30.xAYkFwIYMiVgN2BhPM9_gyZ1qlR_VpQJoEGc4mhyy60
+
+{
+    "variantId": 1,
+    "colourId": 1,
+    "requestedQuantity": 0,
+    "notes": "This should fail"
+}
+
+###
+
+### 15. DEALER — Try wrong variantId (should FAIL)
+POST http://localhost:8080/api/dealer/stock-requests
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJIQ0AxMDEiLCJpYXQiOjE3NzQyNDY0MDcsImV4cCI6MTc3NDMzMjgwN30.xAYkFwIYMiVgN2BhPM9_gyZ1qlR_VpQJoEGc4mhyy60
+
+{
+    "variantId": 999,
+    "colourId": 1,
+    "requestedQuantity": 2,
+    "notes": "This should fail"
+}
+
+
+
+
+
+### 16. ADMIN Login (get fresh admin token)
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+    "username": "admin",
+    "password": "admin123"
+}
+
+###
+
+### 17. ADMIN — Get all stock requests
+GET http://localhost:8080/api/admin/stock-requests
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTc3NDI0Nzg0NCwiZXhwIjoxNzc0MzM0MjQ0fQ.HM8Ks8ZUA1YttsC8r1Q78H-v63O6hFgyybGyg7E3yZg
+
+###
+
+### 18. ADMIN — Approve request (use id from test 17 response)
+PUT http://localhost:8080/api/admin/stock-requests/1/approve
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTc3NDI0Nzg0NCwiZXhwIjoxNzc0MzM0MjQ0fQ.HM8Ks8ZUA1YttsC8r1Q78H-v63O6hFgyybGyg7E3yZg
+
+###
+
+### 19. ADMIN — Try approving same request again (should FAIL)
+PUT http://localhost:8080/api/admin/stock-requests/1/approve
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTc3NDI0NzA4MiwiZXhwIjoxNzc0MzMzNDgyfQ.J5U9OF2GGCfQdAbcOPOrEnrOIJEiLGb7gkWdv-LZIrc
+
+###
+
+### 20. ADMIN — Reject a PENDING request (create a new one first via test 12)
+PUT http://localhost:8080/api/admin/stock-requests/2/reject
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTc3NDI0NzA4MiwiZXhwIjoxNzc0MzMzNDgyfQ.J5U9OF2GGCfQdAbcOPOrEnrOIJEiLGb7gkWdv-LZIrc
+
+###
+
+### 21. DEALER — Try accessing admin endpoint (should return 403)
+GET http://localhost:8080/api/admin/stock-requests
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTc3NDI0NzA4MiwiZXhwIjoxNzc0MzMzNDgyfQ.J5U9OF2GGCfQdAbcOPOrEnrOIJEiLGb7gkWdv-LZIrc
+
+
+
+
+
+### 22. DEALER — Create a fresh stock request for approval test
+POST http://localhost:8080/api/dealer/stock-requests
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJIQ0AxMDEiLCJpYXQiOjE3NzQyNDc5MTYsImV4cCI6MTc3NDMzNDMxNn0.J1r-IbY6ZU_-PyMHpkyO4E9oX61btfK19YA1JtjzDIw
+
+{
+    "variantId": 1,
+    "colourId": 1,
+    "requestedQuantity": 5,
+    "notes": "Test for invoice generation"
+}
+
+###
+
+### 23. ADMIN — Approve the new request (check id from test 17 response)
+### Response should contain invoice with invoiceNumber
+PUT http://localhost:8080/api/admin/stock-requests/3/approve
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTc3NDI0ODEzMSwiZXhwIjoxNzc0MzM0NTMxfQ.avYWnPFBw-BVQNHeQMPC9P0NSdSh2PNIqCu36NxoGYw
+
+###
+
+### 24. ADMIN — Get all invoices (should show the generated invoice)
+GET http://localhost:8080/api/admin/invoices
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTc3NDI0ODUyMywiZXhwIjoxNzc0MzM0OTIzfQ.E8fBafhBSgFO7w7LCVhfDa-ATXu0q0yLfKoR8bwqFGg
+
+###
+
+### 25. DEALER — Get own invoices
+GET http://localhost:8080/api/dealer/invoices
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJIQ0AxMDEiLCJpYXQiOjE3NzQyNDg2NDksImV4cCI6MTc3NDMzNTA0OX0.ICyADUNCaGGR3DnFe_wuVsqx6GuyNVw3A_f5yZgsqfo
+
+###
+
+### 26. ADMIN — Check dealer inventory increased after approval
+GET http://localhost:8080/api/admin/inventory/2
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTc3NDI0ODM2OCwiZXhwIjoxNzc0MzM0NzY4fQ.M1T-IP8fPyNhIujpfa0O5RoQ-1e90uFXoq_jq1hPcZk

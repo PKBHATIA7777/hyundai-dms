@@ -86,11 +86,20 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/test/**").permitAll()
-                
+
                 // 🔥 Allow dealers to READ cars/colours for stock request dropdowns
                 .requestMatchers(HttpMethod.GET, "/api/admin/cars").hasAnyAuthority("ROLE_ADMIN", "ROLE_DEALER")
                 .requestMatchers(HttpMethod.GET, "/api/admin/colours").hasAnyAuthority("ROLE_ADMIN", "ROLE_DEALER")
-                
+
+                // 🔥 Stock request and invoice endpoints (FIXED - method specific)
+                .requestMatchers(HttpMethod.GET, "/api/admin/stock-requests/**").hasAuthority("ROLE_ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/admin/stock-requests/**").hasAuthority("ROLE_ADMIN")
+                .requestMatchers(HttpMethod.GET, "/api/admin/invoices/**").hasAuthority("ROLE_ADMIN")
+
+                .requestMatchers(HttpMethod.GET, "/api/dealer/stock-requests/**").hasAuthority("ROLE_DEALER")
+                .requestMatchers(HttpMethod.POST, "/api/dealer/stock-requests/**").hasAuthority("ROLE_DEALER")
+                .requestMatchers(HttpMethod.GET, "/api/dealer/invoices/**").hasAuthority("ROLE_DEALER")
+
                 // Admin-only write access + other admin endpoints
                 .requestMatchers("/api/admin/**").hasAuthority("ROLE_ADMIN")
                 .requestMatchers("/api/dealer/**").hasAuthority("ROLE_DEALER")

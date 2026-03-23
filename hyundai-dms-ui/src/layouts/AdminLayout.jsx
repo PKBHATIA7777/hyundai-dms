@@ -60,6 +60,12 @@ const AdminLayout = ({ children }) => {
             <span className="nav-icon">▦</span>
             {!collapsed && <span className="nav-label">Inventory</span>}
           </NavLink>
+
+          {/* ✅ NEW NAV ITEM ADDED */}
+          <NavLink to="/admin/stock-requests" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+            <span className="nav-icon">↑</span>
+            {!collapsed && <span className="nav-label">Stock Requests</span>}
+          </NavLink>
         </nav>
 
         <div className="sidebar-footer">

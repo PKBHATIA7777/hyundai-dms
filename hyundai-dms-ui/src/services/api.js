@@ -18,14 +18,22 @@ api.interceptors.request.use(
     }
 );
 
-// Response interceptor — handle 401 (token expired)
+// Response interceptor
+// Only redirect to login if it is a 401 on an auth-required endpoint
+// Do NOT redirect on every 401 — that kills sessions aggressively
 api.interceptors.response.use(
     (response) => response,
     (error) => {
-        if (error.response?.status === 401) {
+        const status = error.response?.status;
+        const url = error.config?.url || '';
+
+        // Only force logout if token is truly invalid or expired
+        // Not on stock-request approve/reject 400 errors etc.
+        if (status === 401 && !url.includes('/auth/login')) {
             localStorage.clear();
             window.location.href = '/login';
         }
+
         return Promise.reject(error);
     }
 );

@@ -1,0 +1,251 @@
+.stock-requests-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.page-header h1 {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin-bottom: 6px;
+}
+
+.page-header p {
+  font-size: 14px;
+  color: var(--grey-text);
+}
+
+/* Tabs */
+.tab-bar {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid var(--grey-mid);
+}
+
+.tab-btn {
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--grey-text);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: var(--transition);
+  cursor: pointer;
+}
+
+.tab-btn:hover {
+  color: var(--purple-main);
+}
+
+.tab-btn.active {
+  color: var(--purple-main);
+  border-bottom-color: var(--purple-main);
+}
+
+/* Table */
+.table-wrapper {
+  background: var(--white);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.table-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--grey-mid);
+}
+
+.table-header h3 {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
+.btn-refresh {
+  background: transparent;
+  border: 1.5px solid var(--purple-border);
+  color: var(--purple-main);
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.btn-refresh:hover {
+  background: var(--purple-soft);
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.data-table th {
+  background: var(--purple-soft);
+  color: var(--purple-dark);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 14px 16px;
+  text-align: left;
+}
+
+.data-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--grey-mid);
+  font-size: 14px;
+  color: var(--text-dark);
+}
+
+.data-table tr:last-child td {
+  border-bottom: none;
+}
+
+.data-table tr:hover td {
+  background: var(--purple-soft);
+  transition: var(--transition);
+}
+
+/* Status Badges */
+.status-badge {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-pending {
+  background: #FFF8E1;
+  color: var(--warning);
+}
+
+.status-approved {
+  background: #E8F5E9;
+  color: var(--success);
+}
+
+.status-rejected {
+  background: #FFEBEE;
+  color: var(--error);
+}
+
+/* Action Buttons */
+.actions-cell {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-sm {
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 600;
+  transition: var(--transition);
+  cursor: pointer;
+  border: none;
+}
+
+.btn-approve {
+  background: #E8F5E9;
+  color: var(--success);
+  border: 1px solid #C8E6C9;
+}
+
+.btn-approve:hover:not(:disabled) {
+  background: var(--success);
+  color: var(--white);
+}
+
+.btn-reject {
+  background: #FFEBEE;
+  color: var(--error);
+  border: 1px solid #FFCDD2;
+}
+
+.btn-reject:hover:not(:disabled) {
+  background: var(--error);
+  color: var(--white);
+}
+
+.btn-sm:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Invoice Number */
+.invoice-number {
+  font-family: monospace;
+  font-size: 12px;
+  background: var(--purple-soft);
+  color: var(--purple-dark);
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+/* Notes */
+.notes-text {
+  font-size: 12px;
+  color: var(--grey-text);
+  font-style: italic;
+  max-width: 200px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Alert */
+.alert {
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+}
+
+.alert-error {
+  background: #FFEBEE;
+  border: 1px solid #FFCDD2;
+  color: var(--error);
+}
+
+/* Empty and Loading */
+.empty-state {
+  text-align: center;
+  color: var(--grey-text);
+  padding: 40px;
+  font-size: 14px;
+}
+
+.loading-state {
+  text-align: center;
+  color: var(--grey-text);
+  padding: 40px;
+  font-size: 14px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .data-table th,
+  .data-table td {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+
+  .actions-cell {
+    flex-direction: column;
+  }
+
+  .tab-btn {
+    padding: 10px 16px;
+    font-size: 13px;
+  }
+}

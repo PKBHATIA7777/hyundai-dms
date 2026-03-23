@@ -4,8 +4,10 @@ import AdminDashboard from './pages/admin/Dashboard';
 import DealerManagement from './pages/admin/DealerManagement';
 import CarCatalogue from './pages/admin/CarCatalogue';
 import InventoryManagement from './pages/admin/InventoryManagement';
+import AdminStockRequests from './pages/admin/StockRequests'; // ✅ ADDED
 import DealerDashboard from './pages/dealer/Dashboard';
 import DealerInventory from './pages/dealer/Inventory';
+import DealerStockRequest from './pages/dealer/StockRequest'; // ✅ ADDED
 import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
@@ -36,6 +38,13 @@ function App() {
           </ProtectedRoute>
         } />
 
+        {/* ✅ NEW ADMIN ROUTE ADDED */}
+        <Route path="/admin/stock-requests" element={
+          <ProtectedRoute role="ROLE_ADMIN">
+            <AdminStockRequests />
+          </ProtectedRoute>
+        } />
+
         {/* Dealer Routes */}
         <Route path="/dealer/dashboard" element={
           <ProtectedRoute role="ROLE_DEALER">
@@ -45,6 +54,13 @@ function App() {
         <Route path="/dealer/inventory" element={
           <ProtectedRoute role="ROLE_DEALER">
             <DealerInventory />
+          </ProtectedRoute>
+        } />
+
+        {/* ✅ NEW ROUTE ADDED */}
+        <Route path="/dealer/stock-requests" element={
+          <ProtectedRoute role="ROLE_DEALER">
+            <DealerStockRequest />
           </ProtectedRoute>
         } />
 
