@@ -3,6 +3,7 @@ package com.example.demo.entity;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.List;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
 @Table(name = "supply_invoices")
@@ -16,6 +17,7 @@ public class SupplyInvoice {
     @JoinColumn(name = "dealer_id", nullable = false)
     private Dealer dealer;
 
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     @OneToOne
     @JoinColumn(name = "stock_request_id", nullable = false)
     private StockRequest stockRequest;

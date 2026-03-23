@@ -78,3 +78,16 @@ input, textarea, select {
 .text-success { color: var(--success); }
 .text-error { color: var(--error); }
 .text-warning { color: var(--warning); }
+
+
+
+/* Shared utility classes */
+.notes-text {
+  font-size: 12px;
+  color: var(--grey-text);
+  font-style: italic;
+  max-width: 200px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
