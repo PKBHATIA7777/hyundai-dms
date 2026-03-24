@@ -87,11 +87,11 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/test/**").permitAll()
 
-                // 🔥 Allow dealers to READ cars/colours for stock request dropdowns
+                // Admin + Dealer shared read access
                 .requestMatchers(HttpMethod.GET, "/api/admin/cars").hasAnyAuthority("ROLE_ADMIN", "ROLE_DEALER")
                 .requestMatchers(HttpMethod.GET, "/api/admin/colours").hasAnyAuthority("ROLE_ADMIN", "ROLE_DEALER")
 
-                // 🔥 Stock request and invoice endpoints (FIXED - method specific)
+                // Stock request and invoice endpoints
                 .requestMatchers(HttpMethod.GET, "/api/admin/stock-requests/**").hasAuthority("ROLE_ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/api/admin/stock-requests/**").hasAuthority("ROLE_ADMIN")
                 .requestMatchers(HttpMethod.GET, "/api/admin/invoices/**").hasAuthority("ROLE_ADMIN")
@@ -100,12 +100,25 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/dealer/stock-requests/**").hasAuthority("ROLE_DEALER")
                 .requestMatchers(HttpMethod.GET, "/api/dealer/invoices/**").hasAuthority("ROLE_DEALER")
 
-                // ✅ NEW: Dealer lead endpoints (added BEFORE catch-all)
+                // Dealer lead endpoints
                 .requestMatchers(HttpMethod.POST, "/api/dealer/leads").hasAuthority("ROLE_DEALER")
                 .requestMatchers(HttpMethod.GET, "/api/dealer/leads").hasAuthority("ROLE_DEALER")
                 .requestMatchers(HttpMethod.PUT, "/api/dealer/leads/**").hasAuthority("ROLE_DEALER")
 
-                // Admin-only write access + other admin endpoints
+                // Dealer booking endpoints
+                .requestMatchers(HttpMethod.POST, "/api/dealer/bookings").hasAuthority("ROLE_DEALER")
+                .requestMatchers(HttpMethod.GET, "/api/dealer/bookings").hasAuthority("ROLE_DEALER")
+                .requestMatchers(HttpMethod.GET, "/api/dealer/bookings/**").hasAuthority("ROLE_DEALER")
+
+                // Dealer sale endpoints
+                .requestMatchers(HttpMethod.POST, "/api/dealer/sales").hasAuthority("ROLE_DEALER")
+                .requestMatchers(HttpMethod.GET, "/api/dealer/sales").hasAuthority("ROLE_DEALER")
+                .requestMatchers(HttpMethod.GET, "/api/dealer/sales/**").hasAuthority("ROLE_DEALER")
+
+                // Dealer payment endpoints
+                .requestMatchers(HttpMethod.GET, "/api/dealer/payments").hasAuthority("ROLE_DEALER")
+
+                // Admin only write access + other admin endpoints
                 .requestMatchers("/api/admin/**").hasAuthority("ROLE_ADMIN")
 
                 // Catch-all dealer routes (kept LAST)

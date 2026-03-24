@@ -56,11 +56,16 @@ const DealerLayout = ({ children }) => {
             {!collapsed && <span className="nav-label">Leads</span>}
           </NavLink>
 
-
           <NavLink to="/dealer/bookings" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-    <span className="nav-icon">✦</span>
-    {!collapsed && <span className="nav-label">Bookings</span>}
-</NavLink>
+            <span className="nav-icon">✦</span>
+            {!collapsed && <span className="nav-label">Bookings</span>}
+          </NavLink>
+
+          {/* ✅ NEW SALES NAV ITEM */}
+          <NavLink to="/dealer/sales" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+            <span className="nav-icon">₹</span>
+            {!collapsed && <span className="nav-label">Sales</span>}
+          </NavLink>
 
           <NavLink to="/dealer/stock-requests" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
             <span className="nav-icon">↑</span>

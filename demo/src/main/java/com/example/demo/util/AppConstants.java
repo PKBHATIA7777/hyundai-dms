@@ -22,4 +22,19 @@ public class AppConstants {
     public static final String LEAD_INTERESTED = "INTERESTED";
     public static final String LEAD_BOOKED = "BOOKED";
     public static final String LEAD_LOST = "LOST";
+
+    // Sale
+    public static final String SALE_COMPLETED = "COMPLETED";
+    public static final String SALE_CANCELLED = "CANCELLED";
+
+    // Payment Type
+    public static final String PAYMENT_ADVANCE = "ADVANCE";
+    public static final String PAYMENT_REMAINING = "REMAINING";
+    public static final String PAYMENT_LOAN = "LOAN";
+
+    // Payment Mode
+    public static final String PAYMENT_MODE_CASH = "Cash";
+    public static final String PAYMENT_MODE_CARD = "Card";
+    public static final String PAYMENT_MODE_UPI = "UPI";
+    public static final String PAYMENT_MODE_LOAN = "Loan";
 }
