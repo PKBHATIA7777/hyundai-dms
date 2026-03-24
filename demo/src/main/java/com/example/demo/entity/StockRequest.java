@@ -7,29 +7,38 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @Entity
 @Table(name = "stock_requests")
 public class StockRequest {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "dealer_id", nullable = false)
     private Dealer dealer;
 
-    @ManyToOne
+    @JsonIgnoreProperties({"availableColours", "hibernateLazyInitializer", "handler"})
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "variant_id", nullable = false)
     private Variant variant;
 
-    @ManyToOne
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "colour_id", nullable = false)
     private Colour colour;
 
     private Integer requestedQuantity;
-    private String status;
+
+    @Column(nullable = false)
+    private String status = "PENDING";
+
+    @Column(nullable = false)
     private LocalDateTime requestDate = LocalDateTime.now();
 
     @Column(columnDefinition = "TEXT")
     private String notes;
+
+    // Getters and Setters
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }

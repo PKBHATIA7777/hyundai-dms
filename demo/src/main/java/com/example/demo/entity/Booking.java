@@ -3,6 +3,8 @@ package com.example.demo.entity;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 @Entity
 @Table(name = "bookings")
 public class Booking {
@@ -27,8 +29,9 @@ public class Booking {
     private Customer customer;
 
     // Car details
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "variant_id", nullable = false)
+    @JsonIgnoreProperties({"availableColours", "hibernateLazyInitializer", "handler"})
     private Variant variant;
 
     @ManyToOne

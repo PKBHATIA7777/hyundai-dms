@@ -547,3 +547,148 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJIQ0AxMDEiL
 ### 49. ADMIN — Check dealer inventory — reserved should have increased
 GET http://localhost:8080/api/admin/inventory/2
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTc3NDI2NDIwMiwiZXhwIjoxNzc0MzUwNjAyfQ.pUKRTbUEKa_vk0SpLWPI9tTccQ_rPv5BCjkT4--Hp0U
+
+
+
+
+
+
+
+
+
+
+```
+### ============================================
+### DAY 8 — SALES TESTS
+### ============================================
+
+### 50. Dealer Login (get fresh token)
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+    "username": "HC@101",
+    "password": "890394"
+}
+
+###
+
+### 51. DEALER — Get all CONFIRMED bookings (ready for sale)
+GET http://localhost:8080/api/dealer/bookings?status=CONFIRMED
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJIQ0AxMDEiLCJpYXQiOjE3NzQzNDMxMzAsImV4cCI6MTc3NDQyOTUzMH0.fGX083iUc98ctvn3TRRnzAJy7bqEVbTb7e4LSrHMtKA
+
+###
+
+### 52. DEALER — Complete a sale (Cash payment, booking id from test 51)
+POST http://localhost:8080/api/dealer/sales
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJIQ0AxMDEiLCJpYXQiOjE3NzQzNDMxMzAsImV4cCI6MTc3NDQyOTUzMH0.fGX083iUc98ctvn3TRRnzAJy7bqEVbTb7e4LSrHMtKA
+
+{
+    "bookingId": 1,
+    "remainingAmount": 900000,
+    "paymentMode": "Cash",
+    "notes": "Full payment received. Customer happy."
+}
+
+###
+
+### 53. DEALER — Try completing same sale again (should FAIL — double sale prevention)
+POST http://localhost:8080/api/dealer/sales
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJIQ0AxMDEiLCJpYXQiOjE3NzQzNDMxMzAsImV4cCI6MTc3NDQyOTUzMH0.fGX083iUc98ctvn3TRRnzAJy7bqEVbTb7e4LSrHMtKA
+
+{
+    "bookingId": 1,
+    "remainingAmount": 900000,
+    "paymentMode": "Cash"
+}
+
+###
+
+### 54. DEALER — Verify booking is now CONVERTED
+GET http://localhost:8080/api/dealer/bookings/1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJIQ0AxMDEiLCJpYXQiOjE3NzQzNDMxMzAsImV4cCI6MTc3NDQyOTUzMH0.fGX083iUc98ctvn3TRRnzAJy7bqEVbTb7e4LSrHMtKA
+
+###
+
+### 55. DEALER — Get all sales
+GET http://localhost:8080/api/dealer/sales
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJIQ0AxMDEiLCJpYXQiOjE3NzQzNDMxMzAsImV4cCI6MTc3NDQyOTUzMH0.fGX083iUc98ctvn3TRRnzAJy7bqEVbTb7e4LSrHMtKA
+
+###
+
+### 56. DEALER — Get single sale with payments
+GET http://localhost:8080/api/dealer/sales/1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJIQ0AxMDEiLCJpYXQiOjE3NzQzNDMxMzAsImV4cCI6MTc3NDQyOTUzMH0.fGX083iUc98ctvn3TRRnzAJy7bqEVbTb7e4LSrHMtKA
+
+###
+
+### 57. DEALER — Get payments for sale (should show ADVANCE + REMAINING)
+GET http://localhost:8080/api/dealer/sales/1/payments
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJIQ0AxMDEiLCJpYXQiOjE3NzQzNDMxMzAsImV4cCI6MTc3NDQyOTUzMH0.fGX083iUc98ctvn3TRRnzAJy7bqEVbTb7e4LSrHMtKA
+
+###
+
+### 58. DEALER — Get all payments (full payment history)
+GET http://localhost:8080/api/dealer/payments
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJIQ0AxMDEiLCJpYXQiOjE3NzQzNDMxMzAsImV4cCI6MTc3NDQyOTUzMH0.fGX083iUc98ctvn3TRRnzAJy7bqEVbTb7e4LSrHMtKA
+
+###
+
+### 59. ADMIN — Verify inventory REDUCED after sale
+GET http://localhost:8080/api/admin/inventory/2
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTc3NDM0MzMwNiwiZXhwIjoxNzc0NDI5NzA2fQ.I8-vAS7A_AIl5Eya_ZY_VlPGoaom-DDzNRLNQ5XlSy0
+
+###
+
+### 60. DEALER — Complete a LOAN sale (create another booking first via test 43 flow)
+POST http://localhost:8080/api/dealer/sales
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJIQ0AxMDEiLCJpYXQiOjE3NzQzNDMxMzAsImV4cCI6MTc3NDQyOTUzMH0.fGX083iUc98ctvn3TRRnzAJy7bqEVbTb7e4LSrHMtKA
+
+{
+    "bookingId": 2,
+    "remainingAmount": 750000,
+    "paymentMode": "Loan",
+    "loanBank": "HDFC Bank",
+    "loanReferenceNumber": "LN2025001234",
+    "notes": "Loan approved by HDFC."
+}
+
+###
+
+### 61. DEALER — Get payments for loan sale (should show ADVANCE + LOAN types)
+GET http://localhost:8080/api/dealer/sales/2/payments
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJIQ0AxMDEiLCJpYXQiOjE3NzQzNDMxMzAsImV4cCI6MTc3NDQyOTUzMH0.fGX083iUc98ctvn3TRRnzAJy7bqEVbTb7e4LSrHMtKA
+
+###
+
+### 62. DEALER — Try selling a CONVERTED booking (should FAIL)
+POST http://localhost:8080/api/dealer/sales
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJIQ0AxMDEiLCJpYXQiOjE3NzQzNDMxMzAsImV4cCI6MTc3NDQyOTUzMH0.fGX083iUc98ctvn3TRRnzAJy7bqEVbTb7e4LSrHMtKA
+
+{
+    "bookingId": 1,
+    "remainingAmount": 0,
+    "paymentMode": "Cash"
+}
+
+###
+
+### 63. ADMIN — Get all customers created by the system
+GET http://localhost:8080/api/admin/customers
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTc3NDM0MzMwNiwiZXhwIjoxNzc0NDI5NzA2fQ.I8-vAS7A_AIl5Eya_ZY_VlPGoaom-DDzNRLNQ5XlSy0
+
+###
+
+### 64. DEALER — Search customer by phone
+GET http://localhost:8080/api/dealer/customers/search?phone=9876543210
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJIQ0AxMDEiLCJpYXQiOjE3NzQzNDMxMzAsImV4cCI6MTc3NDQyOTUzMH0.fGX083iUc98ctvn3TRRnzAJy7bqEVbTb7e4LSrHMtKA
+
+###
+
+### 65. Test Logout endpoint
+POST http://localhost:8080/api/auth/logout
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJIQ0AxMDEiLCJpYXQiOjE3NzQzNDMxMzAsImV4cCI6MTc3NDQyOTUzMH0.fGX083iUc98ctvn3TRRnzAJy7bqEVbTb7e4LSrHMtKA

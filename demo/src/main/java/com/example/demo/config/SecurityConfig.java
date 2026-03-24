@@ -1,6 +1,7 @@
 package com.example.demo.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -117,6 +118,10 @@ public class SecurityConfig {
 
                 // Dealer payment endpoints
                 .requestMatchers(HttpMethod.GET, "/api/dealer/payments").hasAuthority("ROLE_DEALER")
+
+                // 🔥 NEW: Customer endpoints
+                .requestMatchers(HttpMethod.GET, "/api/admin/customers/**").hasAuthority("ROLE_ADMIN")
+                .requestMatchers(HttpMethod.GET, "/api/dealer/customers/**").hasAuthority("ROLE_DEALER")
 
                 // Admin only write access + other admin endpoints
                 .requestMatchers("/api/admin/**").hasAuthority("ROLE_ADMIN")

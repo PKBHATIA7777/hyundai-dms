@@ -63,8 +63,10 @@ const DealerSales = () => {
     const fetchConfirmedBookings = async () => {
         try {
             const res = await getMyBookings('CONFIRMED');
-            setConfirmedBookings(res.data);
-        } catch {
+            // Only show bookings that haven't already been sold
+            setConfirmedBookings(res.data || []);
+        } catch (err) {
+            console.error('Failed to load confirmed bookings:', err);
             setConfirmedBookings([]);
         }
     };
@@ -200,8 +202,8 @@ const DealerSales = () => {
                                 >
                                     <option value="">
                                         {confirmedBookings.length === 0
-                                            ? '-- No confirmed bookings --'
-                                            : '-- Select a booking --'
+                                            ? '-- No confirmed bookings available --'
+                                            : '-- Select a confirmed booking --'
                                         }
                                     </option>
                                     {confirmedBookings.map(b => (
@@ -325,7 +327,6 @@ const DealerSales = () => {
                                 className="btn-primary"
                                 disabled={
                                     formLoading ||
-                                    confirmedBookings.length === 0 ||
                                     !form.bookingId
                                 }
                             >

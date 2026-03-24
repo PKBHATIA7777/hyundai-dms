@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
+import api from '../services/api';
 import './DealerLayout.css';
 
 const DealerLayout = ({ children }) => {
@@ -20,9 +21,15 @@ const DealerLayout = ({ children }) => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const handleLogout = () => {
-    localStorage.clear();
-    navigate('/login');
+  const handleLogout = async () => {
+    try {
+      await api.post('/auth/logout');
+    } catch {
+      // Ignore errors — logout is client-side regardless
+    } finally {
+      localStorage.clear();
+      navigate('/login', { replace: true });
+    }
   };
 
   return (

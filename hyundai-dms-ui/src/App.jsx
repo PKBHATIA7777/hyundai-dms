@@ -5,6 +5,7 @@ import DealerManagement from './pages/admin/DealerManagement';
 import CarCatalogue from './pages/admin/CarCatalogue';
 import InventoryManagement from './pages/admin/InventoryManagement';
 import AdminStockRequests from './pages/admin/StockRequests'; // ✅ ADDED
+import AdminCustomers from './pages/admin/Customers'; // ✅ NEW IMPORT
 import DealerDashboard from './pages/dealer/Dashboard';
 import DealerInventory from './pages/dealer/Inventory';
 import DealerStockRequest from './pages/dealer/StockRequest'; // ✅ ADDED
@@ -45,6 +46,13 @@ function App() {
         <Route path="/admin/stock-requests" element={
           <ProtectedRoute role="ROLE_ADMIN">
             <AdminStockRequests />
+          </ProtectedRoute>
+        } />
+
+        {/* ✅ NEW CUSTOMERS ROUTE */}
+        <Route path="/admin/customers" element={
+          <ProtectedRoute role="ROLE_ADMIN">
+            <AdminCustomers />
           </ProtectedRoute>
         } />
 

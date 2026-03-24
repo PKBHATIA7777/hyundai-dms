@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
+import api from '../services/api';
 import './AdminLayout.css';
 
 const AdminLayout = ({ children }) => {
@@ -20,9 +21,15 @@ const AdminLayout = ({ children }) => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const handleLogout = () => {
-    localStorage.clear();
-    navigate('/login');
+  const handleLogout = async () => {
+    try {
+      await api.post('/auth/logout');
+    } catch {
+      // Ignore errors — logout is client-side regardless
+    } finally {
+      localStorage.clear();
+      navigate('/login', { replace: true });
+    }
   };
 
   return (
@@ -61,10 +68,16 @@ const AdminLayout = ({ children }) => {
             {!collapsed && <span className="nav-label">Inventory</span>}
           </NavLink>
 
-          {/* ✅ NEW NAV ITEM ADDED */}
+          {/* ✅ STOCK REQUESTS */}
           <NavLink to="/admin/stock-requests" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
             <span className="nav-icon">↑</span>
             {!collapsed && <span className="nav-label">Stock Requests</span>}
+          </NavLink>
+
+          {/* ✅ NEW CUSTOMERS NAV ITEM */}
+          <NavLink to="/admin/customers" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+            <span className="nav-icon">👤</span>
+            {!collapsed && <span className="nav-label">Customers</span>}
           </NavLink>
         </nav>
 
