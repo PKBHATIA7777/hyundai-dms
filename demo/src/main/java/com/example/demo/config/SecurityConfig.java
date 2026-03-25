@@ -119,6 +119,21 @@ public class SecurityConfig {
                 // Dealer payment endpoints
                 .requestMatchers(HttpMethod.GET, "/api/dealer/payments").hasAuthority("ROLE_DEALER")
 
+                // 🔥 NEW: Employee endpoints (ADDED HERE)
+                // Admin Employee APIs
+                .requestMatchers(HttpMethod.POST, "/api/admin/employees").hasAuthority("ROLE_ADMIN")
+                .requestMatchers(HttpMethod.GET, "/api/admin/employees").hasAuthority("ROLE_ADMIN")
+                .requestMatchers(HttpMethod.GET, "/api/admin/employees/**").hasAuthority("ROLE_ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/admin/employees/**").hasAuthority("ROLE_ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/admin/employees/**").hasAuthority("ROLE_ADMIN")
+
+                // Dealer Employee APIs
+                .requestMatchers(HttpMethod.POST, "/api/dealer/employees").hasAuthority("ROLE_DEALER")
+                .requestMatchers(HttpMethod.GET, "/api/dealer/employees").hasAuthority("ROLE_DEALER")
+                .requestMatchers(HttpMethod.GET, "/api/dealer/employees/**").hasAuthority("ROLE_DEALER")
+                .requestMatchers(HttpMethod.PUT, "/api/dealer/employees/**").hasAuthority("ROLE_DEALER")
+                .requestMatchers(HttpMethod.DELETE, "/api/dealer/employees/**").hasAuthority("ROLE_DEALER")
+
                 // 🔥 NEW: Customer endpoints
                 .requestMatchers(HttpMethod.GET, "/api/admin/customers/**").hasAuthority("ROLE_ADMIN")
                 .requestMatchers(HttpMethod.GET, "/api/dealer/customers/**").hasAuthority("ROLE_DEALER")

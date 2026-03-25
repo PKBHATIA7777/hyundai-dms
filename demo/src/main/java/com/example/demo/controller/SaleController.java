@@ -1,8 +1,10 @@
 package com.example.demo.controller;
 
-import com.example.demo.dto.SaleDto;
+import com.example.demo.entity.Insurance;
 import com.example.demo.entity.Payment;
 import com.example.demo.entity.Sale;
+import com.example.demo.entity.SaleAccessory;
+import com.example.demo.dto.SaleDto;
 import com.example.demo.service.SaleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +24,7 @@ public class SaleController {
     // -------------------------------------------------------
     // POST /api/dealer/sales
     // Convert a confirmed booking into a sale
-    // Body: { bookingId, remainingAmount, paymentMode, notes }
+    // Optionally attach accessories, insurance, employee
     // -------------------------------------------------------
     @PostMapping("/sales")
     public ResponseEntity<?> createSale(@RequestBody SaleDto dto) {
@@ -60,6 +62,37 @@ public class SaleController {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             Sale sale = saleService.getSaleById(auth.getName(), id);
             return ResponseEntity.ok(sale);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    // -------------------------------------------------------
+    // GET /api/dealer/sales/{id}/accessories
+    // Get accessories attached to a specific sale
+    // -------------------------------------------------------
+    @GetMapping("/sales/{id}/accessories")
+    public ResponseEntity<?> getAccessoriesForSale(@PathVariable Long id) {
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            List<SaleAccessory> accessories =
+                    saleService.getAccessoriesForSale(auth.getName(), id);
+            return ResponseEntity.ok(accessories);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    // -------------------------------------------------------
+    // GET /api/dealer/sales/{id}/insurance
+    // Get insurance for a specific sale
+    // -------------------------------------------------------
+    @GetMapping("/sales/{id}/insurance")
+    public ResponseEntity<?> getInsuranceForSale(@PathVariable Long id) {
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            Insurance insurance = saleService.getInsuranceForSale(auth.getName(), id);
+            return ResponseEntity.ok(insurance);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }

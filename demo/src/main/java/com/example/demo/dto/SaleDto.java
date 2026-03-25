@@ -1,13 +1,13 @@
 package com.example.demo.dto;
 
+import java.util.List;
+
 public class SaleDto {
 
-    // The booking being converted to a sale
-    // This is the only required field
+    // Required — the booking being converted
     private Long bookingId;
 
-    // Remaining amount paid now
-    // If zero — full payment was already done via advance
+    // Remaining amount paid now (0 if fully covered by advance)
     private Double remainingAmount;
 
     // Cash / Card / UPI / Loan
@@ -17,10 +17,17 @@ public class SaleDto {
     private String loanBank;
     private String loanReferenceNumber;
 
+    // Optional employee who handled this sale
+    private Long employeeId;
+
+    // Optional accessories added to this sale
+    private List<SaleItemDto> accessories;
+
+    // Optional insurance details
+    private InsuranceDto insurance;
+
     // Optional notes
     private String notes;
-
-    // Getters and Setters
 
     public Long getBookingId() { return bookingId; }
     public void setBookingId(Long bookingId) { this.bookingId = bookingId; }
@@ -38,6 +45,15 @@ public class SaleDto {
     public void setLoanReferenceNumber(String loanReferenceNumber) {
         this.loanReferenceNumber = loanReferenceNumber;
     }
+
+    public Long getEmployeeId() { return employeeId; }
+    public void setEmployeeId(Long employeeId) { this.employeeId = employeeId; }
+
+    public List<SaleItemDto> getAccessories() { return accessories; }
+    public void setAccessories(List<SaleItemDto> accessories) { this.accessories = accessories; }
+
+    public InsuranceDto getInsurance() { return insurance; }
+    public void setInsurance(InsuranceDto insurance) { this.insurance = insurance; }
 
     public String getNotes() { return notes; }
     public void setNotes(String notes) { this.notes = notes; }

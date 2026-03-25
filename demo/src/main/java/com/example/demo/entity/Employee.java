@@ -1,5 +1,6 @@
 package com.example.demo.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 
 @Entity
@@ -16,13 +17,17 @@ public class Employee {
     @Column(nullable = false)
     private String lastName;
 
+    @Column(unique = true)
     private String phone;
+
+    @Column(unique = true)
     private String email;
+
     private String designation;
 
-    // Which dealer this employee belongs to
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "dealer_id", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Dealer dealer;
 
     @Column(nullable = false)
@@ -53,4 +58,9 @@ public class Employee {
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+
+    @Transient
+    public String getFullName() {
+        return firstName + " " + lastName;
+    }
 }
