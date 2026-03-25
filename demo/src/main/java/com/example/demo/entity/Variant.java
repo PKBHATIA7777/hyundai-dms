@@ -1,13 +1,16 @@
 package com.example.demo.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties; // ✅ Added
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
+
+import java.math.BigDecimal;
 import java.util.Set;
 import java.util.HashSet;
 
 @Entity
 @Table(name = "variants")
 public class Variant {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -15,10 +18,11 @@ public class Variant {
     @Column(nullable = false)
     private String variantName;
 
-    @Column(nullable = false)
-    private Long price;
+    // ✅ Updated: Use BigDecimal for price
+    @Column(nullable = false, precision = 12, scale = 2)
+    private BigDecimal price;
 
-    @JsonIgnoreProperties({"variants", "hibernateLazyInitializer", "handler"}) // ✅ Updated
+    @JsonIgnoreProperties({"variants", "hibernateLazyInitializer", "handler"})
     @ManyToOne
     @JoinColumn(name = "car_id", nullable = false)
     private Car car;
@@ -31,18 +35,45 @@ public class Variant {
     )
     private Set<Colour> availableColours = new HashSet<>();
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public Long getId() {
+        return id;
+    }
 
-    public String getVariantName() { return variantName; }
-    public void setVariantName(String variantName) { this.variantName = variantName; }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-    public Long getPrice() { return price; }
-    public void setPrice(Long price) { this.price = price; }
+    public String getVariantName() {
+        return variantName;
+    }
 
-    public Car getCar() { return car; }
-    public void setCar(Car car) { this.car = car; }
+    public void setVariantName(String variantName) {
+        this.variantName = variantName;
+    }
 
-    public Set<Colour> getAvailableColours() { return availableColours; }
-    public void setAvailableColours(Set<Colour> availableColours) { this.availableColours = availableColours; }
+    // ✅ Updated getter
+    public BigDecimal getPrice() {
+        return price;
+    }
+
+    // ✅ Updated setter
+    public void setPrice(BigDecimal price) {
+        this.price = price;
+    }
+
+    public Car getCar() {
+        return car;
+    }
+
+    public void setCar(Car car) {
+        this.car = car;
+    }
+
+    public Set<Colour> getAvailableColours() {
+        return availableColours;
+    }
+
+    public void setAvailableColours(Set<Colour> availableColours) {
+        this.availableColours = availableColours;
+    }
 }

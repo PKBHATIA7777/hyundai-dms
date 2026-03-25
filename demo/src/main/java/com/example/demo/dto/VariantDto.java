@@ -1,12 +1,14 @@
 package com.example.demo.dto;
 
+import java.math.BigDecimal;
+
 public class VariantDto {
     private String variantName;
-    private Long price;
+    private BigDecimal price;
 
     public String getVariantName() { return variantName; }
     public void setVariantName(String variantName) { this.variantName = variantName; }
 
-    public Long getPrice() { return price; }
-    public void setPrice(Long price) { this.price = price; }
+    public BigDecimal getPrice() { return price; }
+    public void setPrice(BigDecimal price) { this.price = price; }
 }
