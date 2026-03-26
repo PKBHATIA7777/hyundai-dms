@@ -123,7 +123,6 @@ public class EmployeeService {
         Employee employee = employeeRepository.findById(employeeId)
                 .orElseThrow(() -> new RuntimeException("Employee not found."));
 
-        // Ensure the employee belongs to this dealer
         if (!employee.getDealer().getId().equals(user.getDealer().getId())) {
             throw new RuntimeException("You do not have access to this employee.");
         }
@@ -203,6 +202,27 @@ public class EmployeeService {
 
         employee.setStatus("ACTIVE");
         return employeeRepository.save(employee);
+    }
+
+    // -------------------------------------------------------
+    // DEALER: Get single employee (must belong to their dealer)
+    // -------------------------------------------------------
+    public Employee getMyEmployeeById(String username, Long employeeId) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found."));
+
+        if (user.getDealer() == null) {
+            throw new RuntimeException("No dealer account linked to this user.");
+        }
+
+        Employee employee = employeeRepository.findById(employeeId)
+                .orElseThrow(() -> new RuntimeException("Employee not found."));
+
+        if (!employee.getDealer().getId().equals(user.getDealer().getId())) {
+            throw new RuntimeException("You do not have access to this employee.");
+        }
+
+        return employee;
     }
 
     // -------------------------------------------------------

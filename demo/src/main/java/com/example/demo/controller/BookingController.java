@@ -1,6 +1,7 @@
 package com.example.demo.controller;
 
 import com.example.demo.dto.BookingDto;
+import com.example.demo.dto.ApiResponse;
 import com.example.demo.entity.Booking;
 import com.example.demo.service.BookingService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,58 +19,53 @@ public class BookingController {
     @Autowired
     private BookingService bookingService;
 
-    // -------------------------------------------------------
-    // POST /api/dealer/bookings
-    // Create a new booking
-    // Reserves inventory automatically
-    // -------------------------------------------------------
     @PostMapping("/bookings")
     public ResponseEntity<?> createBooking(@RequestBody BookingDto dto) {
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             Booking booking = bookingService.createBooking(auth.getName(), dto);
-            return ResponseEntity.ok(booking);
+            return ResponseEntity.ok(ApiResponse.success("Booking created successfully.", booking));
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
         }
     }
 
-    // -------------------------------------------------------
-    // GET /api/dealer/bookings
-    // Get all bookings for this dealer
-    // Optional query param: ?status=CONFIRMED
-    // -------------------------------------------------------
     @GetMapping("/bookings")
     public ResponseEntity<?> getMyBookings(
             @RequestParam(required = false) String status) {
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-
             List<Booking> bookings;
             if (status != null && !status.isBlank()) {
                 bookings = bookingService.getMyBookingsByStatus(auth.getName(), status);
             } else {
                 bookings = bookingService.getMyBookings(auth.getName());
             }
-
-            return ResponseEntity.ok(bookings);
+            return ResponseEntity.ok(ApiResponse.success(bookings));
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
         }
     }
 
-    // -------------------------------------------------------
-    // GET /api/dealer/bookings/{id}
-    // Get single booking details
-    // -------------------------------------------------------
     @GetMapping("/bookings/{id}")
     public ResponseEntity<?> getBookingById(@PathVariable Long id) {
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             Booking booking = bookingService.getBookingById(auth.getName(), id);
-            return ResponseEntity.ok(booking);
+            return ResponseEntity.ok(ApiResponse.success(booking));
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
+        }
+    }
+
+    @PutMapping("/bookings/{id}/cancel")
+    public ResponseEntity<?> cancelBooking(@PathVariable Long id) {
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            Booking booking = bookingService.cancelBooking(auth.getName(), id);
+            return ResponseEntity.ok(ApiResponse.success("Booking cancelled successfully.", booking));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
         }
     }
 }

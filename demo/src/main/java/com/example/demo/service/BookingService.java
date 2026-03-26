@@ -1,8 +1,3 @@
-
-
-
-
-
 package com.example.demo.service;
 
 import com.example.demo.dto.BookingDto;
@@ -41,20 +36,10 @@ public class BookingService {
 
     // -------------------------------------------------------
     // DEALER: Create a booking
-    // This is the most critical method in Day 7
-    // Steps:
-    // 1. Validate dealer
-    // 2. Find or create customer
-    // 3. Validate variant and colour
-    // 4. Check inventory availability
-    // 5. Create booking
-    // 6. Reserve stock in inventory
-    // 7. If leadId provided — update lead status to BOOKED
     // -------------------------------------------------------
     @Transactional
     public Booking createBooking(String username, BookingDto dto) {
 
-        // Step 1: Get dealer from logged in user
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found."));
 
@@ -64,7 +49,6 @@ public class BookingService {
 
         Dealer dealer = user.getDealer();
 
-        // Step 2: Validate required fields
         if (dto.getVariantId() == null) {
             throw new RuntimeException("Variant is required.");
         }
@@ -78,12 +62,10 @@ public class BookingService {
             throw new RuntimeException("Customer phone is required.");
         }
 
-        // Step 3: Find or create customer by phone
         Customer customer = customerRepository.findByPhone(dto.getPhone())
                 .orElse(null);
 
         if (customer == null) {
-            // New customer
             if (dto.getFirstName() == null || dto.getFirstName().isBlank()) {
                 throw new RuntimeException("First name is required for new customer.");
             }
@@ -101,40 +83,31 @@ public class BookingService {
             customer = customerRepository.save(customer);
         }
 
-        // Step 4: Validate variant exists
         Variant variant = variantRepository.findById(dto.getVariantId())
                 .orElseThrow(() -> new RuntimeException("Variant not found."));
 
-        // Step 5: Validate colour exists
         Colour colour = colourRepository.findById(dto.getColourId())
                 .orElseThrow(() -> new RuntimeException("Colour not found."));
 
-        // Step 6: Check inventory availability
-        // This will throw exception if stock is zero
-        // reserveStock is already defined in InventoryService from Day 5
         inventoryService.reserveStock(
                 dealer.getId(),
                 variant.getId(),
                 colour.getId()
         );
 
-        // Step 7: Handle lead linking if leadId provided
         Lead lead = null;
         if (dto.getLeadId() != null) {
             lead = leadRepository.findById(dto.getLeadId())
                     .orElseThrow(() -> new RuntimeException("Lead not found."));
 
-            // Make sure this lead belongs to this dealer
             if (!lead.getDealer().getId().equals(dealer.getId())) {
                 throw new RuntimeException("This lead does not belong to your dealership.");
             }
 
-            // Update lead status to BOOKED
             lead.setStatus(AppConstants.LEAD_BOOKED);
             leadRepository.save(lead);
         }
 
-        // Step 8: Create the booking
         Booking booking = new Booking();
         booking.setDealer(dealer);
         booking.setCustomer(customer);
@@ -198,11 +171,56 @@ public class BookingService {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new RuntimeException("Booking not found."));
 
-        // Make sure this booking belongs to this dealer
         if (!booking.getDealer().getId().equals(user.getDealer().getId())) {
             throw new RuntimeException("You do not have access to this booking.");
         }
 
         return booking;
+    }
+
+    // -------------------------------------------------------
+    // DEALER: Cancel a confirmed booking
+    // Releases reserved inventory
+    // -------------------------------------------------------
+    @Transactional
+    public Booking cancelBooking(String username, Long bookingId) {
+
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found."));
+
+        if (user.getDealer() == null) {
+            throw new RuntimeException("No dealer account linked to this user.");
+        }
+
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new RuntimeException("Booking not found."));
+
+        if (!booking.getDealer().getId().equals(user.getDealer().getId())) {
+            throw new RuntimeException("You do not have access to this booking.");
+        }
+
+        if (!booking.getBookingStatus().equals(AppConstants.BOOKING_CONFIRMED)) {
+            throw new RuntimeException(
+                    "Only CONFIRMED bookings can be cancelled. " +
+                    "Current status: " + booking.getBookingStatus()
+            );
+        }
+
+        // Release reserved inventory
+        inventoryService.releaseStock(
+                user.getDealer().getId(),
+                booking.getVariant().getId(),
+                booking.getColour().getId()
+        );
+
+        // Update lead status back to INTERESTED if linked
+        if (booking.getLead() != null) {
+            Lead lead = booking.getLead();
+            lead.setStatus(AppConstants.LEAD_INTERESTED);
+            leadRepository.save(lead);
+        }
+
+        booking.setBookingStatus(AppConstants.BOOKING_CANCELLED);
+        return bookingRepository.save(booking);
     }
 }

@@ -1,10 +1,8 @@
 package com.example.demo.controller;
 
-import com.example.demo.entity.Insurance;
-import com.example.demo.entity.Payment;
-import com.example.demo.entity.Sale;
-import com.example.demo.entity.SaleAccessory;
+import com.example.demo.dto.ApiResponse;
 import com.example.demo.dto.SaleDto;
+import com.example.demo.entity.*;
 import com.example.demo.service.SaleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -21,110 +19,80 @@ public class SaleController {
     @Autowired
     private SaleService saleService;
 
-    // -------------------------------------------------------
-    // POST /api/dealer/sales
-    // Convert a confirmed booking into a sale
-    // Optionally attach accessories, insurance, employee
-    // -------------------------------------------------------
     @PostMapping("/sales")
     public ResponseEntity<?> createSale(@RequestBody SaleDto dto) {
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             Sale sale = saleService.createSale(auth.getName(), dto);
-            return ResponseEntity.ok(sale);
+            return ResponseEntity.ok(ApiResponse.success("Sale completed successfully.", sale));
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
         }
     }
 
-    // -------------------------------------------------------
-    // GET /api/dealer/sales
-    // Get all sales for this dealer
-    // -------------------------------------------------------
     @GetMapping("/sales")
     public ResponseEntity<?> getMySales() {
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             List<Sale> sales = saleService.getMySales(auth.getName());
-            return ResponseEntity.ok(sales);
+            return ResponseEntity.ok(ApiResponse.success(sales));
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
         }
     }
 
-    // -------------------------------------------------------
-    // GET /api/dealer/sales/{id}
-    // Get single sale details
-    // -------------------------------------------------------
     @GetMapping("/sales/{id}")
     public ResponseEntity<?> getSaleById(@PathVariable Long id) {
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             Sale sale = saleService.getSaleById(auth.getName(), id);
-            return ResponseEntity.ok(sale);
+            return ResponseEntity.ok(ApiResponse.success(sale));
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
         }
     }
 
-    // -------------------------------------------------------
-    // GET /api/dealer/sales/{id}/accessories
-    // Get accessories attached to a specific sale
-    // -------------------------------------------------------
     @GetMapping("/sales/{id}/accessories")
     public ResponseEntity<?> getAccessoriesForSale(@PathVariable Long id) {
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            List<SaleAccessory> accessories =
-                    saleService.getAccessoriesForSale(auth.getName(), id);
-            return ResponseEntity.ok(accessories);
+            List<SaleAccessory> accessories = saleService.getAccessoriesForSale(auth.getName(), id);
+            return ResponseEntity.ok(ApiResponse.success(accessories));
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
         }
     }
 
-    // -------------------------------------------------------
-    // GET /api/dealer/sales/{id}/insurance
-    // Get insurance for a specific sale
-    // -------------------------------------------------------
     @GetMapping("/sales/{id}/insurance")
     public ResponseEntity<?> getInsuranceForSale(@PathVariable Long id) {
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             Insurance insurance = saleService.getInsuranceForSale(auth.getName(), id);
-            return ResponseEntity.ok(insurance);
+            return ResponseEntity.ok(ApiResponse.success(insurance));
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
         }
     }
 
-    // -------------------------------------------------------
-    // GET /api/dealer/sales/{id}/payments
-    // Get all payments for a specific sale
-    // -------------------------------------------------------
     @GetMapping("/sales/{id}/payments")
     public ResponseEntity<?> getPaymentsForSale(@PathVariable Long id) {
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             List<Payment> payments = saleService.getPaymentsForSale(auth.getName(), id);
-            return ResponseEntity.ok(payments);
+            return ResponseEntity.ok(ApiResponse.success(payments));
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
         }
     }
 
-    // -------------------------------------------------------
-    // GET /api/dealer/payments
-    // Get all payments for this dealer
-    // -------------------------------------------------------
     @GetMapping("/payments")
     public ResponseEntity<?> getMyPayments() {
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             List<Payment> payments = saleService.getMyPayments(auth.getName());
-            return ResponseEntity.ok(payments);
+            return ResponseEntity.ok(ApiResponse.success(payments));
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
         }
     }
 }

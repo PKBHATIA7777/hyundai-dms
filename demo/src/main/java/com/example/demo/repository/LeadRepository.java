@@ -2,6 +2,8 @@ package com.example.demo.repository;
 
 import com.example.demo.entity.Lead;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -9,12 +11,16 @@ import java.util.List;
 @Repository
 public interface LeadRepository extends JpaRepository<Lead, Long> {
 
-    // Get all leads for a specific dealer — latest first
     List<Lead> findByDealerIdOrderByCreatedAtDesc(Long dealerId);
 
-    // Get leads by status for a dealer
     List<Lead> findByDealerIdAndStatusOrderByCreatedAtDesc(Long dealerId, String status);
 
-    // Check if a lead already exists for this customer at this dealer
     boolean existsByCustomerIdAndDealerId(Long customerId, Long dealerId);
+
+    @Query("SELECT COUNT(l) FROM Lead l WHERE l.dealer.id = :dealerId " +
+           "AND l.status NOT IN ('BOOKED', 'LOST')")
+    long countOpenLeadsByDealer(@Param("dealerId") Long dealerId);
+
+    @Query("SELECT COUNT(l) FROM Lead l WHERE l.dealer.id = :dealerId")
+    long countAllByDealer(@Param("dealerId") Long dealerId);
 }
