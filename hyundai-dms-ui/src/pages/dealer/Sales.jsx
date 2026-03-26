@@ -48,28 +48,30 @@ const DealerSales = () => {
         }
     }, [form.bookingId]);
 
-    const fetchSales = async () => {
-        setSalesLoading(true);
-        try {
-            const res = await getMySales();
-            setSales(res.data);
-        } catch {
-            setSales([]);
-        } finally {
-            setSalesLoading(false);
-        }
-    };
+   const fetchSales = async () => {
+    setSalesLoading(true);
+    try {
+        const res = await getMySales();
+        // Backend wraps in ApiResponse: { success, data, timestamp }
+        const data = res.data?.data ?? res.data;
+        setSales(Array.isArray(data) ? data : []);
+    } catch {
+        setSales([]);
+    } finally {
+        setSalesLoading(false);
+    }
+};
 
-    const fetchConfirmedBookings = async () => {
-        try {
-            const res = await getMyBookings('CONFIRMED');
-            // Only show bookings that haven't already been sold
-            setConfirmedBookings(res.data || []);
-        } catch (err) {
-            console.error('Failed to load confirmed bookings:', err);
-            setConfirmedBookings([]);
-        }
-    };
+  const fetchConfirmedBookings = async () => {
+    try {
+        const res = await getMyBookings('CONFIRMED');
+        const data = res.data?.data ?? res.data;
+        setConfirmedBookings(Array.isArray(data) ? data : []);
+    } catch (err) {
+        console.error('Failed to load confirmed bookings:', err);
+        setConfirmedBookings([]);
+    }
+};
 
     const handleFormChange = (e) => {
         setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));

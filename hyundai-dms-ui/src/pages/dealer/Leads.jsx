@@ -52,17 +52,18 @@ const DealerLeads = () => {
         }
     }, [selectedCarId]);
 
-    const fetchLeads = async () => {
-        setLeadsLoading(true);
-        try {
-            const res = await getMyLeads();
-            setLeads(res.data);
-        } catch {
-            setLeads([]);
-        } finally {
-            setLeadsLoading(false);
-        }
-    };
+const fetchLeads = async () => {
+    setLeadsLoading(true);
+    try {
+        const res = await getMyLeads();
+        const data = res.data?.data ?? res.data;
+        setLeads(Array.isArray(data) ? data : []);
+    } catch {
+        setLeads([]);
+    } finally {
+        setLeadsLoading(false);
+    }
+};
 
     const fetchCars = async () => {
         try {

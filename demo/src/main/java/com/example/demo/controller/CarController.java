@@ -38,13 +38,6 @@ public class CarController {
         return ResponseEntity.ok(carService.getAllCars());
     }
 
-    // --- Public Dealer Endpoint ---
-    // Allows dealers to fetch car catalog for stock requests (Day 6)
-    @GetMapping("/dealer/cars")  // ✅ Fixed — removed duplicate /api prefix
-    public ResponseEntity<List<Car>> getAllCarsPublic() {
-        return ResponseEntity.ok(carService.getAllCars());
-    }
-
     // --- Variant Endpoints ---
 
     @PostMapping("/cars/{carId}/variants")

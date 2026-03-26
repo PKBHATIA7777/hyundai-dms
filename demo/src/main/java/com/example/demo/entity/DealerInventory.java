@@ -8,7 +8,13 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "dealer_inventory")
+@Table(
+    name = "dealer_inventory",
+    uniqueConstraints = @jakarta.persistence.UniqueConstraint(
+        name = "uk_dealer_variant_colour",
+        columnNames = {"dealer_id", "variant_id", "colour_id"}
+    )
+)
 public class DealerInventory {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -25,24 +25,39 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     @Value("${app.security.lock-duration}")
     private long lockDuration;
 
-    @Override
-    @Transactional
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+ @Override
+@Transactional
+public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User Not Found: " + username));
+    User user = userRepository.findByUsername(username)
+            .orElseThrow(() -> new UsernameNotFoundException("User Not Found: " + username));
 
-        // ✅ AUTO UNLOCK CHECK
-        if (!user.getAccountNonLocked()) {
-            if (user.getLockTime() != null) {
-                if (unlockWhenTimeExpired(user)) {
-                    // account unlocked automatically
-                }
-            }
+    // AUTO UNLOCK CHECK — releases account lock if duration has expired
+    if (!user.getAccountNonLocked()) {
+        if (user.getLockTime() != null) {
+            unlockWhenTimeExpired(user);
         }
-
-        return UserDetailsImpl.build(user);
     }
+
+    // Block deactivated dealers at the authentication layer
+    if (user.getDealer() != null && "INACTIVE".equals(user.getDealer().getStatus())) {
+        // We lock the Spring Security account so LockedException is thrown
+        // The dealer's User record is NOT permanently locked — it reactivates
+        // when the admin reactivates the dealer. We achieve this by returning
+        // a UserDetails with accountNonLocked=false only when dealer is INACTIVE.
+        return new org.springframework.security.core.userdetails.User(
+            user.getUsername(),
+            user.getPassword(),
+            true,   // enabled
+            true,   // accountNonExpired
+            true,   // credentialsNonExpired
+            false,  // accountNonLocked  <-- blocks login
+            UserDetailsImpl.build(user).getAuthorities()
+        );
+    }
+
+    return UserDetailsImpl.build(user);
+}
 
     @Transactional
     public void increaseFailedAttempts(User user) {

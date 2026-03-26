@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
+import NotFound from './pages/NotFound';
 
 // Admin Pages
 import AdminDashboard      from './pages/admin/Dashboard';
@@ -10,13 +11,13 @@ import AdminStockRequests  from './pages/admin/StockRequests';
 import AdminCustomers      from './pages/admin/Customers';
 
 // Dealer Pages
-import DealerDashboard   from './pages/dealer/Dashboard';
-import DealerInventory   from './pages/dealer/Inventory';
+import DealerDashboard    from './pages/dealer/Dashboard';
+import DealerInventory    from './pages/dealer/Inventory';
 import DealerStockRequest from './pages/dealer/StockRequest';
-import DealerLeads       from './pages/dealer/Leads';
-import DealerBookings    from './pages/dealer/Bookings';
-import DealerSales       from './pages/dealer/Sales';
-import DealerEmployees   from './pages/dealer/Employees';
+import DealerLeads        from './pages/dealer/Leads';
+import DealerBookings     from './pages/dealer/Bookings';
+import DealerSales        from './pages/dealer/Sales';
+import DealerEmployees    from './pages/dealer/Employees';
 
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -70,7 +71,7 @@ function App() {
         } />
 
         {/* Default */}
-        <Route path="*" element={<Navigate to="/login" />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
   );

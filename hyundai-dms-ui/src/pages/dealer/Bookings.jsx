@@ -92,17 +92,18 @@ const DealerBookings = () => {
         }
     }, [form.leadId]);
 
-    const fetchBookings = async () => {
-        setBookingsLoading(true);
-        try {
-            const res = await getMyBookings();
-            setBookings(res.data);
-        } catch {
-            setBookings([]);
-        } finally {
-            setBookingsLoading(false);
-        }
-    };
+ const fetchBookings = async () => {
+    setBookingsLoading(true);
+    try {
+        const res = await getMyBookings();
+        const data = res.data?.data ?? res.data;
+        setBookings(Array.isArray(data) ? data : []);
+    } catch {
+        setBookings([]);
+    } finally {
+        setBookingsLoading(false);
+    }
+};
 
     const fetchCars = async () => {
         try {
@@ -113,15 +114,15 @@ const DealerBookings = () => {
         }
     };
 
-    const fetchLeads = async () => {
-        try {
-            // Only fetch INTERESTED leads — these are ready to book
-            const res = await getMyLeads('INTERESTED');
-            setLeads(res.data);
-        } catch {
-            setLeads([]);
-        }
-    };
+   const fetchLeads = async () => {
+    try {
+        const res = await getMyLeads('INTERESTED');
+        const data = res.data?.data ?? res.data;
+        setLeads(Array.isArray(data) ? data : []);
+    } catch {
+        setLeads([]);
+    }
+};
 
     const handleFormChange = (e) => {
         setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));

@@ -79,16 +79,34 @@ public class AuthController {
             ));
 
         } catch (LockedException e) {
+
+            // Distinguish between dealer-deactivated and failed-attempts lock
+            boolean isDealerInactive = user.getDealer() != null
+                    && "INACTIVE".equals(user.getDealer().getStatus());
+
+            if (isDealerInactive) {
+                return ResponseEntity.status(HttpStatus.LOCKED)
+                        .body("Error: Your dealership account has been deactivated. Please contact headquarters.");
+            }
+
             return ResponseEntity.status(HttpStatus.LOCKED)
                     .body("Error: Account locked due to 5 failed attempts. Try again later.");
 
         } catch (BadCredentialsException e) {
+
             userDetailsService.increaseFailedAttempts(user);
-            int remaining = 5 - user.getFailedAttempts();
+
+            // Re-fetch updated user
+            User refreshedUser = userRepository.findByUsername(loginRequest.getUsername())
+                    .orElse(user);
+
+            int remaining = 5 - refreshedUser.getFailedAttempts();
+
             if (remaining <= 0) {
                 return ResponseEntity.status(HttpStatus.LOCKED)
                         .body("Error: Account is now locked due to 5 failed attempts.");
             }
+
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body("Error: Invalid password. " + remaining + " attempts remaining.");
         }
@@ -96,8 +114,6 @@ public class AuthController {
 
     @PostMapping("/logout")
     public ResponseEntity<?> logoutUser() {
-        // JWT is stateless — we clear the security context on the server side
-        // The client is responsible for discarding the token
         SecurityContextHolder.clearContext();
 
         Map<String, String> response = new HashMap<>();

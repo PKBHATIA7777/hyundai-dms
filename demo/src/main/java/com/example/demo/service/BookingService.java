@@ -34,6 +34,10 @@ public class BookingService {
     @Autowired
     private InventoryService inventoryService;
 
+    // ✅ NEW: Inject PaymentRepository
+    @Autowired
+    private PaymentRepository paymentRepository;
+
     // -------------------------------------------------------
     // DEALER: Create a booking
     // -------------------------------------------------------
@@ -48,6 +52,13 @@ public class BookingService {
         }
 
         Dealer dealer = user.getDealer();
+
+        // ✅ Guard for inactive dealers
+        if ("INACTIVE".equals(dealer.getStatus())) {
+            throw new RuntimeException(
+                    "Your dealership account is inactive. You cannot create bookings."
+            );
+        }
 
         if (dto.getVariantId() == null) {
             throw new RuntimeException("Variant is required.");
@@ -221,6 +232,16 @@ public class BookingService {
         }
 
         booking.setBookingStatus(AppConstants.BOOKING_CANCELLED);
-        return bookingRepository.save(booking);
+        Booking savedBooking = bookingRepository.save(booking);
+
+        // ✅ NEW: Log refund intent (no DB insert due to FK constraint)
+        if (booking.getAdvanceAmount() != null && booking.getAdvanceAmount() > 0) {
+            System.out.println("REFUND DUE: Booking #" + booking.getId()
+                    + " cancelled. Advance of ₹" + booking.getAdvanceAmount()
+                    + " to be refunded to " + booking.getCustomer().getFirstName()
+                    + " " + booking.getCustomer().getLastName());
+        }
+
+        return savedBooking;
     }
 }

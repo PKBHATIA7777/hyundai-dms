@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import './Login.css';
@@ -7,8 +7,22 @@ const Login = () => {
   const [credentials, setCredentials] = useState({ username: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false); // ✅ Added
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+
+  // ✅ NEW: Redirect already-authenticated users
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const role = localStorage.getItem('role');
+
+    if (token && role) {
+      if (role === 'ROLE_ADMIN') {
+        navigate('/admin/dashboard', { replace: true });
+      } else if (role === 'ROLE_DEALER') {
+        navigate('/dealer/dashboard', { replace: true });
+      }
+    }
+  }, [navigate]);
 
   const handleChange = (e) => {
     setCredentials({ ...credentials, [e.target.name]: e.target.value });
@@ -30,14 +44,14 @@ const Login = () => {
       localStorage.setItem('username', username);
       localStorage.setItem('email', email);
 
-      // ✅ Added login timestamp (NEW CHANGE)
+      // ✅ Added login timestamp
       localStorage.setItem('loginTime', Date.now().toString());
 
       if (dealerStatus) {
         localStorage.setItem('dealerStatus', dealerStatus);
       }
 
-      // ✅ Updated navigation with replace: true (NEW CHANGE)
+      // ✅ Navigation
       if (role === 'ROLE_ADMIN') {
         navigate('/admin/dashboard', { replace: true });
       } else if (role === 'ROLE_DEALER') {
@@ -96,7 +110,7 @@ const Login = () => {
               />
             </div>
 
-            {/* ✅ Updated Password Field */}
+            {/* Password Field */}
             <div className="form-group">
               <label htmlFor="password">Password</label>
               <div style={{ position: 'relative' }}>
