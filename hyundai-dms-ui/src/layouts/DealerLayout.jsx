@@ -46,18 +46,13 @@ const DealerLayout = ({ children }) => {
           </button>
         </div>
 
+        {/* ✅ UPDATED NAVIGATION */}
         <nav className="sidebar-nav">
           <NavLink to="/dealer/dashboard" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
             <span className="nav-icon">▣</span>
             {!collapsed && <span className="nav-label">Dashboard</span>}
           </NavLink>
 
-          <NavLink to="/dealer/inventory" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-            <span className="nav-icon">▦</span>
-            {!collapsed && <span className="nav-label">Inventory</span>}
-          </NavLink>
-
-          {/* ✅ NEW LEADS NAV ITEM */}
           <NavLink to="/dealer/leads" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
             <span className="nav-icon">◎</span>
             {!collapsed && <span className="nav-label">Leads</span>}
@@ -68,15 +63,24 @@ const DealerLayout = ({ children }) => {
             {!collapsed && <span className="nav-label">Bookings</span>}
           </NavLink>
 
-          {/* ✅ NEW SALES NAV ITEM */}
           <NavLink to="/dealer/sales" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
             <span className="nav-icon">₹</span>
             {!collapsed && <span className="nav-label">Sales</span>}
           </NavLink>
 
+          <NavLink to="/dealer/inventory" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+            <span className="nav-icon">▦</span>
+            {!collapsed && <span className="nav-label">Inventory</span>}
+          </NavLink>
+
           <NavLink to="/dealer/stock-requests" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
             <span className="nav-icon">↑</span>
             {!collapsed && <span className="nav-label">Request Stock</span>}
+          </NavLink>
+
+          <NavLink to="/dealer/employees" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+            <span className="nav-icon">👥</span>
+            {!collapsed && <span className="nav-label">Employees</span>}
           </NavLink>
         </nav>
 

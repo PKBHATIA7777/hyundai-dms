@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import DealerLayout from '../../layouts/DealerLayout';
 import { getAllCars } from '../../services/carService';
 import { getMyLeads } from '../../services/leadService';
-import { createBooking, getMyBookings } from '../../services/bookingService';
+import { createBooking, getMyBookings, cancelBooking } from '../../services/bookingService';
 import './Bookings.css';
 
 const DealerBookings = () => {
@@ -36,6 +36,10 @@ const DealerBookings = () => {
     const [formError, setFormError] = useState('');
     const [formSuccess, setFormSuccess] = useState('');
     const [formLoading, setFormLoading] = useState(false);
+
+    // Cancel booking state
+    const [cancellingId, setCancellingId] = useState(null);
+    const [cancelError, setCancelError] = useState('');
 
     useEffect(() => {
         fetchBookings();
@@ -172,6 +176,23 @@ const DealerBookings = () => {
         }
     };
 
+    const handleCancelBooking = async (bookingId) => {
+        setCancelError('');
+        setCancellingId(bookingId);
+        try {
+            await cancelBooking(bookingId);
+            fetchBookings();
+        } catch (err) {
+            setCancelError(
+                err.response?.data?.error ||
+                err.response?.data ||
+                'Failed to cancel booking.'
+            );
+        } finally {
+            setCancellingId(null);
+        }
+    };
+
     // Filter bookings
     const filteredBookings = activeFilter === 'ALL'
         ? bookings
@@ -227,6 +248,16 @@ const DealerBookings = () => {
                         </button>
                     ))}
                 </div>
+
+                {cancelError && (
+                    <div style={{
+                        background: '#FFEBEE', border: '1px solid #FFCDD2',
+                        color: 'var(--error)', padding: '10px 14px',
+                        borderRadius: 'var(--radius-sm)', fontSize: '13px'
+                    }}>
+                        {cancelError}
+                    </div>
+                )}
 
                 <div className="bookings-layout">
 
@@ -471,6 +502,29 @@ const DealerBookings = () => {
                                                     <span className="lead-tag">
                                                         🔗 Lead #{booking.lead.id}
                                                     </span>
+                                                )}
+                                                {booking.bookingStatus === 'CONFIRMED' && (
+                                                    <button
+                                                        style={{
+                                                            padding: '4px 10px',
+                                                            fontSize: '11px',
+                                                            fontWeight: '700',
+                                                            background: '#FFEBEE',
+                                                            color: 'var(--error)',
+                                                            border: '1px solid #FFCDD2',
+                                                            borderRadius: '20px',
+                                                            cursor: 'pointer',
+                                                            transition: 'all 0.2s'
+                                                        }}
+                                                        onClick={() => {
+                                                            if (window.confirm(`Cancel booking for ${booking.customer?.firstName} ${booking.customer?.lastName}? This will release the reserved inventory.`)) {
+                                                                handleCancelBooking(booking.id);
+                                                            }
+                                                        }}
+                                                        disabled={cancellingId === booking.id}
+                                                    >
+                                                        {cancellingId === booking.id ? 'Cancelling...' : 'Cancel'}
+                                                    </button>
                                                 )}
                                             </div>
                                         </div>
