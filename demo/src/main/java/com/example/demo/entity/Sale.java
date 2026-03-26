@@ -47,9 +47,8 @@ public class Sale {
     private Employee employee;
 
     @Column(nullable = false)
-    private Double totalAmount;
+    private Double totalAmount; // Base car amount before accessories
 
-    // Base car amount before accessories
     @Column(nullable = false)
     private Double advancePaid;
 
@@ -91,62 +90,155 @@ public class Sale {
 
     // Getters and Setters
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public Long getId() {
+        return id;
+    }
 
-    public Booking getBooking() { return booking; }
-    public void setBooking(Booking booking) { this.booking = booking; }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-    public Dealer getDealer() { return dealer; }
-    public void setDealer(Dealer dealer) { this.dealer = dealer; }
+    public Booking getBooking() {
+        return booking;
+    }
 
-    public Customer getCustomer() { return customer; }
-    public void setCustomer(Customer customer) { this.customer = customer; }
+    public void setBooking(Booking booking) {
+        this.booking = booking;
+    }
 
-    public Variant getVariant() { return variant; }
-    public void setVariant(Variant variant) { this.variant = variant; }
+    public Dealer getDealer() {
+        return dealer;
+    }
 
-    public Colour getColour() { return colour; }
-    public void setColour(Colour colour) { this.colour = colour; }
+    public void setDealer(Dealer dealer) {
+        this.dealer = dealer;
+    }
 
-    public Employee getEmployee() { return employee; }
-    public void setEmployee(Employee employee) { this.employee = employee; }
+    public Customer getCustomer() {
+        return customer;
+    }
 
-    public Double getTotalAmount() { return totalAmount; }
-    public void setTotalAmount(Double totalAmount) { this.totalAmount = totalAmount; }
+    public void setCustomer(Customer customer) {
+        this.customer = customer;
+    }
 
-    public Double getAdvancePaid() { return advancePaid; }
-    public void setAdvancePaid(Double advancePaid) { this.advancePaid = advancePaid; }
+    public Variant getVariant() {
+        return variant;
+    }
 
-    public Double getRemainingAmount() { return remainingAmount; }
-    public void setRemainingAmount(Double remainingAmount) { this.remainingAmount = remainingAmount; }
+    public void setVariant(Variant variant) {
+        this.variant = variant;
+    }
 
-    public Double getAccessoriesAmount() { return accessoriesAmount; }
-    public void setAccessoriesAmount(Double accessoriesAmount) { this.accessoriesAmount = accessoriesAmount; }
+    public Colour getColour() {
+        return colour;
+    }
 
-    public Double getInsuranceAmount() { return insuranceAmount; }
-    public void setInsuranceAmount(Double insuranceAmount) { this.insuranceAmount = insuranceAmount; }
+    public void setColour(Colour colour) {
+        this.colour = colour;
+    }
 
-    public Double getGrandTotal() { return grandTotal; }
-    public void setGrandTotal(Double grandTotal) { this.grandTotal = grandTotal; }
+    public Employee getEmployee() {
+        return employee;
+    }
 
-    public String getPaymentMode() { return paymentMode; }
-    public void setPaymentMode(String paymentMode) { this.paymentMode = paymentMode; }
+    public void setEmployee(Employee employee) {
+        this.employee = employee;
+    }
 
-    public String getSaleStatus() { return saleStatus; }
-    public void setSaleStatus(String saleStatus) { this.saleStatus = saleStatus; }
+    public Double getTotalAmount() {
+        return totalAmount;
+    }
 
-    public LocalDateTime getSaleDate() { return saleDate; }
-    public void setSaleDate(LocalDateTime saleDate) { this.saleDate = saleDate; }
+    public void setTotalAmount(Double totalAmount) {
+        this.totalAmount = totalAmount;
+    }
 
-    public String getNotes() { return notes; }
-    public void setNotes(String notes) { this.notes = notes; }
+    public Double getAdvancePaid() {
+        return advancePaid;
+    }
 
-    public List<SaleAccessory> getSaleAccessories() { return saleAccessories; }
+    public void setAdvancePaid(Double advancePaid) {
+        this.advancePaid = advancePaid;
+    }
+
+    public Double getRemainingAmount() {
+        return remainingAmount;
+    }
+
+    public void setRemainingAmount(Double remainingAmount) {
+        this.remainingAmount = remainingAmount;
+    }
+
+    public Double getAccessoriesAmount() {
+        return accessoriesAmount;
+    }
+
+    public void setAccessoriesAmount(Double accessoriesAmount) {
+        this.accessoriesAmount = accessoriesAmount;
+    }
+
+    public Double getInsuranceAmount() {
+        return insuranceAmount;
+    }
+
+    public void setInsuranceAmount(Double insuranceAmount) {
+        this.insuranceAmount = insuranceAmount;
+    }
+
+    public Double getGrandTotal() {
+        return grandTotal;
+    }
+
+    public void setGrandTotal(Double grandTotal) {
+        this.grandTotal = grandTotal;
+    }
+
+    public String getPaymentMode() {
+        return paymentMode;
+    }
+
+    public void setPaymentMode(String paymentMode) {
+        this.paymentMode = paymentMode;
+    }
+
+    public String getSaleStatus() {
+        return saleStatus;
+    }
+
+    public void setSaleStatus(String saleStatus) {
+        this.saleStatus = saleStatus;
+    }
+
+    public LocalDateTime getSaleDate() {
+        return saleDate;
+    }
+
+    public void setSaleDate(LocalDateTime saleDate) {
+        this.saleDate = saleDate;
+    }
+
+    public String getNotes() {
+        return notes;
+    }
+
+    public void setNotes(String notes) {
+        this.notes = notes;
+    }
+
+    public List<SaleAccessory> getSaleAccessories() {
+        return saleAccessories;
+    }
+
     public void setSaleAccessories(List<SaleAccessory> saleAccessories) {
         this.saleAccessories = saleAccessories;
     }
 
-    public Insurance getInsurance() { return insurance; }
-    public void setInsurance(Insurance insurance) { this.insurance = insurance; }
+    public Insurance getInsurance() {
+        return insurance;
+    }
+
+    public void setInsurance(Insurance insurance) {
+        this.insurance = insurance;
+    }
 }
