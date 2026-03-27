@@ -32,6 +32,10 @@ public class DealerService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    // ✅ Added AuditLogService
+    @Autowired
+    private AuditLogService auditLogService;
+
     // Generate dealer code like HC@101
     private String generateDealerCode(String name) {
         String[] words = name.trim().split("\\s+");
@@ -115,6 +119,13 @@ public class DealerService {
         response.put("generatedPassword", rawPassword);
         response.put("message", "Dealer and user account created successfully.");
 
+        // ✅ Audit log
+        auditLogService.log(
+                "CREATE_DEALER",
+                "Dealer created: " + savedDealer.getName() + " (" + dealerCode + ")",
+                null
+        );
+
         return response;
     }
 
@@ -168,6 +179,13 @@ public class DealerService {
         dealer.setStatus("INACTIVE");
         dealerRepository.save(dealer);
 
+        // ✅ Audit log
+        auditLogService.log(
+                "DEACTIVATE_DEALER",
+                "Dealer deactivated: " + dealer.getName() + " (" + dealer.getDealerCode() + ")",
+                null
+        );
+
         return dealer;
     }
 
@@ -178,6 +196,13 @@ public class DealerService {
 
         dealer.setStatus("ACTIVE");
         dealerRepository.save(dealer);
+
+        // ✅ Audit log
+        auditLogService.log(
+                "ACTIVATE_DEALER",
+                "Dealer activated: " + dealer.getName() + " (" + dealer.getDealerCode() + ")",
+                null
+        );
 
         return dealer;
     }

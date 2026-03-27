@@ -236,40 +236,42 @@ const DealerStockRequest = () => {
             ) : requests.length === 0 ? (
               <div className="empty-state">No requests submitted yet.</div>
             ) : (
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>Car</th>
-                    <th>Variant</th>
-                    <th>Colour</th>
-                    <th>Qty</th>
-                    <th>Date</th>
-                    <th>Status</th>
-                    <th>Notes</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {requests.map(req => (
-                    <tr key={req.id}>
-                      <td>{req.variant?.car?.modelName || '--'}</td>
-                      <td>{req.variant?.variantName}</td>
-                      <td>{req.colour?.colourName}</td>
-                      <td>{req.requestedQuantity}</td>
-                      <td>{formatDate(req.requestDate)}</td>
-                      <td>
-                        <span className={getStatusClass(req.status)}>
-                          {req.status}
-                        </span>
-                      </td>
-                      <td>
-                        <span className="notes-text">
-                          {req.notes || '--'}
-                        </span>
-                      </td>
+              <div className="table-scroll">
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th>Car</th>
+                      <th>Variant</th>
+                      <th>Colour</th>
+                      <th>Qty</th>
+                      <th>Date</th>
+                      <th>Status</th>
+                      <th>Notes</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {requests.map(req => (
+                      <tr key={req.id}>
+                        <td>{req.variant?.car?.modelName || '--'}</td>
+                        <td>{req.variant?.variantName}</td>
+                        <td>{req.colour?.colourName}</td>
+                        <td>{req.requestedQuantity}</td>
+                        <td>{formatDate(req.requestDate)}</td>
+                        <td>
+                          <span className={getStatusClass(req.status)}>
+                            {req.status}
+                          </span>
+                        </td>
+                        <td>
+                          <span className="notes-text">
+                            {req.notes || '--'}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
 

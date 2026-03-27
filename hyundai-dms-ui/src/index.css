@@ -91,3 +91,10 @@ input, textarea, select {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+
+/* Responsive table wrapper — use on any table that may overflow on mobile */
+.table-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}

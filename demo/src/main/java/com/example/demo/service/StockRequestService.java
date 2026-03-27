@@ -39,6 +39,9 @@ public class StockRequestService {
     @Autowired
     private InventoryService inventoryService;
 
+    @Autowired
+    private AuditLogService auditLogService;
+
     // -------------------------------------------------------
     // DEALER: Create a new stock request
     // -------------------------------------------------------
@@ -148,6 +151,14 @@ public class StockRequestService {
                 request.getRequestedQuantity()
         );
 
+        // Audit log: Log the approval
+        auditLogService.log(
+            "APPROVE_STOCK_REQUEST",
+            "Stock request #" + requestId + " approved. Invoice: " + invoiceNumber
+            + ". Dealer: " + request.getDealer().getName(),
+            null
+        );
+
         return savedInvoice;
     }
 
@@ -163,6 +174,13 @@ public class StockRequestService {
         if (!request.getStatus().equals(AppConstants.STOCK_REQUEST_PENDING)) {
             throw new RuntimeException("Only PENDING requests can be rejected.");
         }
+
+        // Audit log: Log the rejection
+        auditLogService.log(
+            "REJECT_STOCK_REQUEST",
+            "Stock request #" + requestId + " rejected. Dealer: " + request.getDealer().getName(),
+            null
+        );
 
         request.setStatus(AppConstants.STOCK_REQUEST_REJECTED);
         return stockRequestRepository.save(request);

@@ -123,6 +123,7 @@ public class SecurityConfig {
                 // ── PAYMENTS ──
                 .requestMatchers(HttpMethod.GET, "/api/dealer/payments").hasAuthority("ROLE_DEALER")
                 .requestMatchers(HttpMethod.GET, "/api/admin/payments/**").hasAuthority("ROLE_ADMIN")
+                .requestMatchers(HttpMethod.GET, "/api/admin/audit-logs/**").hasAuthority("ROLE_ADMIN")
 
                 // ── EMPLOYEES ──
                 .requestMatchers(HttpMethod.POST, "/api/admin/employees").hasAuthority("ROLE_ADMIN")

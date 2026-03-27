@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import DealerLayout from '../../layouts/DealerLayout';
 import { getAllCars } from '../../services/carService';
 import { createLead, getMyLeads, updateLeadStatus } from '../../services/leadService';
+import { validatePhone, validateEmail } from '../../utils/validators';
 import './Leads.css';
 
 const STATUS_FLOW = {
@@ -52,18 +53,18 @@ const DealerLeads = () => {
         }
     }, [selectedCarId]);
 
-const fetchLeads = async () => {
-    setLeadsLoading(true);
-    try {
-        const res = await getMyLeads();
-        const data = res.data?.data ?? res.data;
-        setLeads(Array.isArray(data) ? data : []);
-    } catch {
-        setLeads([]);
-    } finally {
-        setLeadsLoading(false);
-    }
-};
+    const fetchLeads = async () => {
+        setLeadsLoading(true);
+        try {
+            const res = await getMyLeads();
+            const data = res.data?.data ?? res.data;
+            setLeads(Array.isArray(data) ? data : []);
+        } catch {
+            setLeads([]);
+        } finally {
+            setLeadsLoading(false);
+        }
+    };
 
     const fetchCars = async () => {
         try {
@@ -84,6 +85,13 @@ const fetchLeads = async () => {
         e.preventDefault();
         setFormError('');
         setFormSuccess('');
+
+        // Client-side validation
+        const phoneErr = validatePhone(form.phone);
+        if (phoneErr) { setFormError(phoneErr); return; }
+        const emailErr = validateEmail(form.email);
+        if (emailErr) { setFormError(emailErr); return; }
+
         setFormLoading(true);
 
         try {

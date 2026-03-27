@@ -79,6 +79,20 @@ const AdminLayout = ({ children }) => {
             <span className="nav-icon">👤</span>
             {!collapsed && <span className="nav-label">Customers</span>}
           </NavLink>
+
+
+<NavLink to="/admin/payments" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+    <span className="nav-icon">₹</span>
+    {!collapsed && <span className="nav-label">Payments</span>}
+</NavLink>
+
+<NavLink to="/admin/audit-logs" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+    <span className="nav-icon">📋</span>
+    {!collapsed && <span className="nav-label">Audit Logs</span>}
+</NavLink>
+
+
+
         </nav>
 
         <div className="sidebar-footer">

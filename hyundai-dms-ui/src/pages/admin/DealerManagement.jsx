@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AdminLayout from '../../layouts/AdminLayout';
 import api from '../../services/api';
+import { toast } from '../../components/Toast';
 import './DealerManagement.css';
 
 const DealerManagement = () => {
@@ -11,7 +12,6 @@ const DealerManagement = () => {
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [createdDealerInfo, setCreatedDealerInfo] = useState(null);
   const [copied, setCopied] = useState(false);
-  const [error, setError] = useState('');
   const [formError, setFormError] = useState('');
   const [form, setForm] = useState({
     name: '', city: '', contactNumber: '', address: '', email: ''
@@ -27,7 +27,7 @@ const DealerManagement = () => {
       const res = await api.get('/admin/dealers');
       setDealers(res.data);
     } catch {
-      setError('Failed to load dealers.');
+      toast.error('Failed to load dealers.');
     } finally {
       setLoading(false);
     }
@@ -56,18 +56,20 @@ const DealerManagement = () => {
   const handleDeactivate = async (id) => {
     try {
       await api.put(`/admin/dealers/${id}/deactivate`);
+      toast.success('Dealer deactivated successfully.');
       fetchDealers();
     } catch {
-      setError('Failed to deactivate dealer.');
+      toast.error('Failed to deactivate dealer.');
     }
   };
 
   const handleActivate = async (id) => {
     try {
       await api.put(`/admin/dealers/${id}/activate`);
+      toast.success('Dealer activated successfully.');
       fetchDealers();
     } catch {
-      setError('Failed to activate dealer.');
+      toast.error('Failed to activate dealer.');
     }
   };
 
@@ -81,7 +83,7 @@ const DealerManagement = () => {
       });
       setShowPasswordModal(true);
     } catch {
-      setError('Failed to reset password.');
+      toast.error('Failed to reset password.');
     }
   };
 
@@ -107,8 +109,6 @@ const DealerManagement = () => {
             + Add Dealer
           </button>
         </div>
-
-        {error && <div className="alert alert-error">{error}</div>}
 
         {loading ? (
           <div className="loading-state">Loading dealers...</div>

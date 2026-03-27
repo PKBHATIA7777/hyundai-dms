@@ -154,6 +154,88 @@ const DealerSales = () => {
         return '₹' + Number(amount).toLocaleString('en-IN');
     };
 
+    // Print Invoice Handler
+    const handlePrintInvoice = (sale) => {
+        const invoiceHTML = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Sale Invoice #${sale.id}</title>
+                <style>
+                    body { font-family: Arial, sans-serif; padding: 40px; color: #1A1A2E; }
+                    h1 { color: #5B2D8E; margin-bottom: 4px; }
+                    .subtitle { color: #757575; margin-bottom: 32px; font-size: 14px; }
+                    .section { margin-bottom: 24px; }
+                    .section-title { font-size: 12px; font-weight: 700; text-transform: uppercase;
+                        letter-spacing: 0.5px; color: #757575; margin-bottom: 10px;
+                        padding-bottom: 6px; border-bottom: 1px solid #E0E0E0; }
+                    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+                    .field-label { font-size: 11px; color: #757575; font-weight: 600; }
+                    .field-value { font-size: 14px; font-weight: 600; margin-top: 2px; }
+                    .total { font-size: 22px; font-weight: 700; color: #2E7D32; }
+                    .footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid #E0E0E0;
+                        font-size: 12px; color: #757575; text-align: center; }
+                    @media print { body { padding: 20px; } }
+                </style>
+            </head>
+            <body>
+                <h1>Hyundai DMS</h1>
+                <div class="subtitle">Sale Invoice — Dealer Copy</div>
+
+                <div class="section">
+                    <div class="section-title">Invoice Details</div>
+                    <div class="grid">
+                        <div><div class="field-label">Sale ID</div><div class="field-value">#${sale.id}</div></div>
+                        <div><div class="field-label">Sale Date</div><div class="field-value">${new Date(sale.saleDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' })}</div></div>
+                        <div><div class="field-label">Booking Reference</div><div class="field-value">#${sale.booking?.id}</div></div>
+                        <div><div class="field-label">Status</div><div class="field-value">${sale.saleStatus}</div></div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="section-title">Customer Details</div>
+                    <div class="grid">
+                        <div><div class="field-label">Name</div><div class="field-value">${sale.customer?.firstName} ${sale.customer?.lastName}</div></div>
+                        <div><div class="field-label">Phone</div><div class="field-value">${sale.customer?.phone}</div></div>
+                        ${sale.customer?.email ? `<div><div class="field-label">Email</div><div class="field-value">${sale.customer.email}</div></div>` : ''}
+                        ${sale.customer?.panNumber ? `<div><div class="field-label">PAN</div><div class="field-value">${sale.customer.panNumber}</div></div>` : ''}
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="section-title">Vehicle Details</div>
+                    <div class="grid">
+                        <div><div class="field-label">Model</div><div class="field-value">${sale.variant?.car?.modelName || '--'}</div></div>
+                        <div><div class="field-label">Variant</div><div class="field-value">${sale.variant?.variantName}</div></div>
+                        <div><div class="field-label">Colour</div><div class="field-value">${sale.colour?.colourName} (${sale.colour?.colourCode})</div></div>
+                        <div><div class="field-label">Payment Mode</div><div class="field-value">${sale.paymentMode || '--'}</div></div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="section-title">Payment Breakdown</div>
+                    <div class="grid">
+                        <div><div class="field-label">Advance Paid</div><div class="field-value">₹${Number(sale.advancePaid).toLocaleString('en-IN')}</div></div>
+                        <div><div class="field-label">Remaining Amount</div><div class="field-value">₹${Number(sale.remainingAmount).toLocaleString('en-IN')}</div></div>
+                        <div><div class="field-label">Vehicle Amount</div><div class="field-value">₹${Number(sale.totalAmount).toLocaleString('en-IN')}</div></div>
+                        <div><div class="field-label">Grand Total</div><div class="field-value total">₹${Number(sale.grandTotal || sale.totalAmount).toLocaleString('en-IN')}</div></div>
+                    </div>
+                </div>
+
+                <div class="footer">
+                    This is a computer-generated invoice. Thank you for choosing Hyundai.
+                </div>
+            </body>
+            </html>
+        `;
+
+        const win = window.open('', '_blank');
+        win.document.write(invoiceHTML);
+        win.document.close();
+        win.focus();
+        setTimeout(() => { win.print(); }, 500);
+    };
+
     const isLoan = form.paymentMode === 'Loan';
 
     return (
@@ -450,6 +532,34 @@ const DealerSales = () => {
                                                     </span>
                                                 </div>
                                             )}
+                                        </div>
+
+                                        {/* Print Invoice Button */}
+                                        <div style={{ marginTop: '10px' }}>
+                                            <button
+                                                onClick={() => handlePrintInvoice(sale)}
+                                                style={{
+                                                    padding: '6px 14px',
+                                                    fontSize: '12px',
+                                                    fontWeight: 600,
+                                                    background: 'var(--purple-soft)',
+                                                    color: 'var(--purple-main)',
+                                                    border: '1px solid var(--purple-border)',
+                                                    borderRadius: '20px',
+                                                    cursor: 'pointer',
+                                                    transition: 'all 0.2s'
+                                                }}
+                                                onMouseOver={e => {
+                                                    e.target.style.background = 'var(--purple-main)';
+                                                    e.target.style.color = 'white';
+                                                }}
+                                                onMouseOut={e => {
+                                                    e.target.style.background = 'var(--purple-soft)';
+                                                    e.target.style.color = 'var(--purple-main)';
+                                                }}
+                                            >
+                                                🖨 Print Invoice
+                                            </button>
                                         </div>
 
                                         {sale.notes && (

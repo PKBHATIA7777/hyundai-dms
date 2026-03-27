@@ -9,6 +9,9 @@ import CarCatalogue        from './pages/admin/CarCatalogue';
 import InventoryManagement from './pages/admin/InventoryManagement';
 import AdminStockRequests  from './pages/admin/StockRequests';
 import AdminCustomers      from './pages/admin/Customers';
+import AdminPayments       from './pages/admin/Payments';
+import AdminAuditLogs      from './pages/admin/AuditLogs';
+import AdminCustomerDetail from './pages/admin/CustomerDetail';
 
 // Dealer Pages
 import DealerDashboard    from './pages/dealer/Dashboard';
@@ -45,6 +48,17 @@ function App() {
         } />
         <Route path="/admin/customers" element={
           <ProtectedRoute role="ROLE_ADMIN"><AdminCustomers /></ProtectedRoute>
+        } />
+
+        {/* ✅ New Admin Routes */}
+        <Route path="/admin/payments" element={
+          <ProtectedRoute role="ROLE_ADMIN"><AdminPayments /></ProtectedRoute>
+        } />
+        <Route path="/admin/audit-logs" element={
+          <ProtectedRoute role="ROLE_ADMIN"><AdminAuditLogs /></ProtectedRoute>
+        } />
+        <Route path="/admin/customers/:id" element={
+          <ProtectedRoute role="ROLE_ADMIN"><AdminCustomerDetail /></ProtectedRoute>
         } />
 
         {/* ── Dealer Routes ── */}

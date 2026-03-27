@@ -38,6 +38,10 @@ public class BookingService {
     @Autowired
     private PaymentRepository paymentRepository;
 
+    // ✅ NEW: Inject AuditLogService
+    @Autowired
+    private AuditLogService auditLogService;
+
     // -------------------------------------------------------
     // DEALER: Create a booking
     // -------------------------------------------------------
@@ -191,7 +195,6 @@ public class BookingService {
 
     // -------------------------------------------------------
     // DEALER: Cancel a confirmed booking
-    // Releases reserved inventory
     // -------------------------------------------------------
     @Transactional
     public Booking cancelBooking(String username, Long bookingId) {
@@ -234,13 +237,23 @@ public class BookingService {
         booking.setBookingStatus(AppConstants.BOOKING_CANCELLED);
         Booking savedBooking = bookingRepository.save(booking);
 
-        // ✅ NEW: Log refund intent (no DB insert due to FK constraint)
+        // ✅ NEW: Log refund intent
         if (booking.getAdvanceAmount() != null && booking.getAdvanceAmount() > 0) {
             System.out.println("REFUND DUE: Booking #" + booking.getId()
                     + " cancelled. Advance of ₹" + booking.getAdvanceAmount()
                     + " to be refunded to " + booking.getCustomer().getFirstName()
                     + " " + booking.getCustomer().getLastName());
         }
+
+        // ✅ NEW: Audit Log
+        auditLogService.log(
+                "CANCEL_BOOKING",
+                "Booking #" + booking.getId() + " cancelled by dealer " + username
+                        + ". Customer: " + booking.getCustomer().getFirstName()
+                        + " " + booking.getCustomer().getLastName()
+                        + ". Advance: ₹" + booking.getAdvanceAmount(),
+                username
+        );
 
         return savedBooking;
     }

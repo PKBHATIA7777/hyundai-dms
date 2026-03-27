@@ -1,9 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import AdminLayout from '../../layouts/AdminLayout';
 import api from '../../services/api';
 import './Customers.css';
 
 const AdminCustomers = () => {
+    const navigate = useNavigate();
+
     const [customers, setCustomers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -114,51 +117,57 @@ const AdminCustomers = () => {
                             }
                         </div>
                     ) : (
-                        <table className="data-table">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Full Name</th>
-                                    <th>Phone</th>
-                                    <th>Email</th>
-                                    <th>PAN Number</th>
-                                    <th>Address</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {customers.map(customer => (
-                                    <tr key={customer.id}>
-                                        <td>
-                                            <span className="customer-id">
-                                                #{customer.id}
-                                            </span>
-                                        </td>
-                                        <td className="customer-name">
-                                            {customer.firstName} {customer.lastName}
-                                        </td>
-                                        <td>{customer.phone}</td>
-                                        <td>
-                                            {customer.email
-                                                ? customer.email
-                                                : <span className="no-data">—</span>
-                                            }
-                                        </td>
-                                        <td>
-                                            {customer.panNumber
-                                                ? <span className="pan-badge">{customer.panNumber}</span>
-                                                : <span className="no-data">—</span>
-                                            }
-                                        </td>
-                                        <td>
-                                            {customer.address
-                                                ? customer.address
-                                                : <span className="no-data">—</span>
-                                            }
-                                        </td>
+                        <div className="table-scroll">
+                            <table className="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Full Name</th>
+                                        <th>Phone</th>
+                                        <th>Email</th>
+                                        <th>PAN Number</th>
+                                        <th>Address</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    {customers.map(customer => (
+                                        <tr
+                                            key={customer.id}
+                                            onClick={() => navigate(`/admin/customers/${customer.id}`)}
+                                            style={{ cursor: 'pointer' }}
+                                        >
+                                            <td>
+                                                <span className="customer-id">
+                                                    #{customer.id}
+                                                </span>
+                                            </td>
+                                            <td className="customer-name">
+                                                {customer.firstName} {customer.lastName}
+                                            </td>
+                                            <td>{customer.phone}</td>
+                                            <td>
+                                                {customer.email
+                                                    ? customer.email
+                                                    : <span className="no-data">—</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                {customer.panNumber
+                                                    ? <span className="pan-badge">{customer.panNumber}</span>
+                                                    : <span className="no-data">—</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                {customer.address
+                                                    ? customer.address
+                                                    : <span className="no-data">—</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
                     )}
                 </div>
 

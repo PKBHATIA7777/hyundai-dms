@@ -280,74 +280,76 @@ const DealerEmployees = () => {
                 No employees added yet. Add your first team member.
               </div>
             ) : (
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>Employee</th>
-                    <th>Phone</th>
-                    <th>Email</th>
-                    <th>Designation</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {employees.map(emp => (
-                    <tr key={emp.id}>
-                      <td>
-                        <div className="employee-cell">
-                          <div className="employee-avatar">
-                            {getInitials(emp.firstName, emp.lastName)}
-                          </div>
-                          <div>
-                            <div className="employee-name">
-                              {emp.firstName} {emp.lastName}
-                            </div>
-                            <div className="employee-designation">
-                              {emp.designation || '—'}
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-                      <td>{emp.phone || '—'}</td>
-                      <td>{emp.email || '—'}</td>
-                      <td>{emp.designation || '—'}</td>
-                      <td>
-                        <span className={`status-badge status-${emp.status?.toLowerCase()}`}>
-                          {emp.status}
-                        </span>
-                      </td>
-                      <td>
-                        <div className="actions-cell">
-                          <button
-                            className="btn-sm btn-edit"
-                            onClick={() => openEdit(emp)}
-                          >
-                            Edit
-                          </button>
-                          {emp.status === 'ACTIVE' ? (
-                            <button
-                              className="btn-sm btn-danger"
-                              onClick={() => handleToggleStatus(emp)}
-                              disabled={actionLoading === emp.id}
-                            >
-                              {actionLoading === emp.id ? '...' : 'Deactivate'}
-                            </button>
-                          ) : (
-                            <button
-                              className="btn-sm btn-success"
-                              onClick={() => handleToggleStatus(emp)}
-                              disabled={actionLoading === emp.id}
-                            >
-                              {actionLoading === emp.id ? '...' : 'Activate'}
-                            </button>
-                          )}
-                        </div>
-                      </td>
+              <div className="table-scroll">
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th>Employee</th>
+                      <th>Phone</th>
+                      <th>Email</th>
+                      <th>Designation</th>
+                      <th>Status</th>
+                      <th>Actions</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {employees.map(emp => (
+                      <tr key={emp.id}>
+                        <td>
+                          <div className="employee-cell">
+                            <div className="employee-avatar">
+                              {getInitials(emp.firstName, emp.lastName)}
+                            </div>
+                            <div>
+                              <div className="employee-name">
+                                {emp.firstName} {emp.lastName}
+                              </div>
+                              <div className="employee-designation">
+                                {emp.designation || '—'}
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+                        <td>{emp.phone || '—'}</td>
+                        <td>{emp.email || '—'}</td>
+                        <td>{emp.designation || '—'}</td>
+                        <td>
+                          <span className={`status-badge status-${emp.status?.toLowerCase()}`}>
+                            {emp.status}
+                          </span>
+                        </td>
+                        <td>
+                          <div className="actions-cell">
+                            <button
+                              className="btn-sm btn-edit"
+                              onClick={() => openEdit(emp)}
+                            >
+                              Edit
+                            </button>
+                            {emp.status === 'ACTIVE' ? (
+                              <button
+                                className="btn-sm btn-danger"
+                                onClick={() => handleToggleStatus(emp)}
+                                disabled={actionLoading === emp.id}
+                              >
+                                {actionLoading === emp.id ? '...' : 'Deactivate'}
+                              </button>
+                            ) : (
+                              <button
+                                className="btn-sm btn-success"
+                                onClick={() => handleToggleStatus(emp)}
+                                disabled={actionLoading === emp.id}
+                              >
+                                {actionLoading === emp.id ? '...' : 'Activate'}
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
         </div>

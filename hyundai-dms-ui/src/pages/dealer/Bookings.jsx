@@ -3,6 +3,7 @@ import DealerLayout from '../../layouts/DealerLayout';
 import { getAllCars } from '../../services/carService';
 import { getMyLeads } from '../../services/leadService';
 import { createBooking, getMyBookings, cancelBooking } from '../../services/bookingService';
+import { validatePhone, validatePAN, validateEmail, validateAdvanceAmount } from '../../utils/validators';
 import './Bookings.css';
 
 const DealerBookings = () => {
@@ -92,18 +93,18 @@ const DealerBookings = () => {
         }
     }, [form.leadId]);
 
- const fetchBookings = async () => {
-    setBookingsLoading(true);
-    try {
-        const res = await getMyBookings();
-        const data = res.data?.data ?? res.data;
-        setBookings(Array.isArray(data) ? data : []);
-    } catch {
-        setBookings([]);
-    } finally {
-        setBookingsLoading(false);
-    }
-};
+    const fetchBookings = async () => {
+        setBookingsLoading(true);
+        try {
+            const res = await getMyBookings();
+            const data = res.data?.data ?? res.data;
+            setBookings(Array.isArray(data) ? data : []);
+        } catch {
+            setBookings([]);
+        } finally {
+            setBookingsLoading(false);
+        }
+    };
 
     const fetchCars = async () => {
         try {
@@ -114,15 +115,15 @@ const DealerBookings = () => {
         }
     };
 
-   const fetchLeads = async () => {
-    try {
-        const res = await getMyLeads('INTERESTED');
-        const data = res.data?.data ?? res.data;
-        setLeads(Array.isArray(data) ? data : []);
-    } catch {
-        setLeads([]);
-    }
-};
+    const fetchLeads = async () => {
+        try {
+            const res = await getMyLeads('INTERESTED');
+            const data = res.data?.data ?? res.data;
+            setLeads(Array.isArray(data) ? data : []);
+        } catch {
+            setLeads([]);
+        }
+    };
 
     const handleFormChange = (e) => {
         setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
@@ -134,8 +135,23 @@ const DealerBookings = () => {
         e.preventDefault();
         setFormError('');
         setFormSuccess('');
-        setFormLoading(true);
 
+        // Client-side validation
+        const phoneErr = validatePhone(form.phone);
+        if (phoneErr) { setFormError(phoneErr); return; }
+
+        const panErr = validatePAN(form.panNumber);
+        if (panErr) { setFormError(panErr); return; }
+
+        const emailErr = validateEmail(form.email);
+        if (emailErr) { setFormError(emailErr); return; }
+
+        // Find selected variant price for advance validation
+        const selectedVariant = variants.find(v => v.id === Number(form.variantId));
+        const advanceErr = validateAdvanceAmount(form.advanceAmount, selectedVariant?.price);
+        if (advanceErr) { setFormError(advanceErr); return; }
+
+        setFormLoading(true);
         try {
             const payload = {
                 firstName: form.firstName || null,
@@ -151,11 +167,8 @@ const DealerBookings = () => {
                 notes: form.notes || null,
                 leadId: form.leadId ? Number(form.leadId) : null
             };
-
             await createBooking(payload);
             setFormSuccess('Booking created successfully. Inventory reserved.');
-
-            // Reset form
             setForm({
                 firstName: '', lastName: '', phone: '',
                 email: '', address: '', panNumber: '',
@@ -165,13 +178,14 @@ const DealerBookings = () => {
             });
             setSelectedCarId('');
             setSelectedLead(null);
-
-            // Refresh both bookings and leads
             fetchBookings();
             fetchLeads();
-
         } catch (err) {
-            setFormError(err.response?.data || 'Failed to create booking.');
+            setFormError(
+                err.response?.data?.error ||
+                err.response?.data ||
+                'Failed to create booking.'
+            );
         } finally {
             setFormLoading(false);
         }

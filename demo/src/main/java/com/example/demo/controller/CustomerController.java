@@ -1,9 +1,13 @@
 package com.example.demo.controller;
 
 import com.example.demo.entity.Customer;
+import com.example.demo.entity.Sale;
 import com.example.demo.repository.CustomerRepository;
 import com.example.demo.repository.UserRepository;
+import com.example.demo.repository.SaleRepository;
 import com.example.demo.entity.User;
+import com.example.demo.dto.ApiResponse;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -21,6 +25,9 @@ public class CustomerController {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private SaleRepository saleRepository;
 
     // -------------------------------------------------------
     // ADMIN — Get all customers in the system
@@ -58,6 +65,28 @@ public class CustomerController {
             return ResponseEntity.ok(customer);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    // -------------------------------------------------------
+    // ADMIN — Get all sales for a specific customer
+    // GET /api/admin/customers/{id}/sales
+    // -------------------------------------------------------
+    @GetMapping("/admin/customers/{id}/sales")
+    public ResponseEntity<?> getCustomerSales(@PathVariable Long id) {
+        try {
+            customerRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Customer not found."));
+
+            List<Sale> sales = saleRepository.findAll().stream()
+                    .filter(s -> s.getCustomer() != null
+                            && s.getCustomer().getId().equals(id))
+                    .sorted((a, b) -> b.getSaleDate().compareTo(a.getSaleDate()))
+                    .toList();
+
+            return ResponseEntity.ok(ApiResponse.success(sales));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
         }
     }
 

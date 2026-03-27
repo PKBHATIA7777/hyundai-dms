@@ -48,6 +48,27 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.error("Invalid parameter: " + ex.getName()));
     }
 
+    // ✅ NEW: Handle EntityNotFoundException (404)
+    @ExceptionHandler(jakarta.persistence.EntityNotFoundException.class)
+    public ResponseEntity<ApiResponse<Void>> handleEntityNotFound(
+            jakarta.persistence.EntityNotFoundException ex) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(ApiResponse.error("Resource not found: " + ex.getMessage()));
+    }
+
+    // ✅ NEW: Handle DataIntegrityViolationException (409)
+    @ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class)
+    public ResponseEntity<ApiResponse<Void>> handleDataIntegrity(
+            org.springframework.dao.DataIntegrityViolationException ex) {
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(ApiResponse.error(
+                        "Operation failed due to a data conflict. " +
+                        "The record may already exist or a required reference is missing."
+                ));
+    }
+
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ApiResponse<Void>> handleRuntime(RuntimeException ex) {
         return ResponseEntity

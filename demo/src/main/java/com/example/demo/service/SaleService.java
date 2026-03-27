@@ -1,8 +1,3 @@
-
-
-
-
-
 package com.example.demo.service;
 
 import com.example.demo.dto.InsuranceDto;
@@ -30,6 +25,7 @@ public class SaleService {
     @Autowired private SaleAccessoryRepository saleAccessoryRepository;
     @Autowired private InsuranceRepository insuranceRepository;
     @Autowired private EmployeeRepository employeeRepository;
+    @Autowired private AuditLogService auditLogService;
 
     // -------------------------------------------------------
     // DEALER: Create a sale from a confirmed booking
@@ -184,9 +180,9 @@ public class SaleService {
             if (iDto.getPolicyNumber() == null || iDto.getPolicyNumber().isBlank()) {
                 throw new RuntimeException("Insurance policy number is required.");
             }
-        if (iDto.getPolicyType() == null || iDto.getPolicyType().isBlank()) {
-    throw new RuntimeException("Insurance type is required.");
-}
+            if (iDto.getPolicyType() == null || iDto.getPolicyType().isBlank()) {
+                throw new RuntimeException("Insurance type is required.");
+            }
             if (iDto.getPremiumAmount() == null || iDto.getPremiumAmount() <= 0) {
                 throw new RuntimeException("Insurance premium must be greater than zero.");
             }
@@ -208,7 +204,7 @@ public class SaleService {
             insurance.setSale(savedSale);
             insurance.setProviderName(iDto.getProviderName());
             insurance.setPolicyNumber(iDto.getPolicyNumber());
-          insurance.setPolicyType(iDto.getPolicyType());
+            insurance.setPolicyType(iDto.getPolicyType());
             insurance.setPremiumAmount(iDto.getPremiumAmount());
             insurance.setStartDate(iDto.getStartDate());
             insurance.setEndDate(iDto.getEndDate());
@@ -272,6 +268,16 @@ public class SaleService {
         // Step 13: Mark booking CONVERTED
         booking.setBookingStatus(AppConstants.BOOKING_CONVERTED);
         bookingRepository.save(booking);
+
+        // Audit log: Log the sale creation
+        auditLogService.log(
+            "CREATE_SALE",
+            "Sale #" + savedSale.getId() + " completed by " + username
+            + ". Customer: " + savedSale.getCustomer().getFirstName()
+            + " " + savedSale.getCustomer().getLastName()
+            + ". Amount: ₹" + savedSale.getGrandTotal(),
+            username
+        );
 
         return savedSale;
     }

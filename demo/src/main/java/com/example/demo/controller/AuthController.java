@@ -63,6 +63,8 @@ public class AuthController {
             UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
             String role = userDetails.getAuthorities().iterator().next().getAuthority();
 
+            
+            // System.out.println(encode.);
             // Get dealer status if dealer
             String dealerStatus = null;
             if (user.getDealer() != null) {
