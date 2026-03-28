@@ -5,7 +5,6 @@ import {
   createCar,
   addVariant,
   getAllColours,
-  addColour,
   assignColourToVariant
 } from '../../services/carService';
 import './CarCatalogue.css';
@@ -25,12 +24,6 @@ const CarCatalogue = () => {
   // Variant form — one per car
   const [variantForms, setVariantForms] = useState({});
   const [variantFormErrors, setVariantFormErrors] = useState({});
-
-  // Colour form
-  const [showColourPanel, setShowColourPanel] = useState(false);
-  const [colourForm, setColourForm] = useState({ colourName: '', colourCode: '', pickedColour: '#5B2D8E' });
-  const [colourFormError, setColourFormError] = useState('');
-  const [colourFormSuccess, setColourFormSuccess] = useState('');
 
   // Assign colour form — one per variant
   const [assignForms, setAssignForms] = useState({});
@@ -106,34 +99,6 @@ const CarCatalogue = () => {
     }
   };
 
-  // --- Colour Panel ---
-  const handleColourFormChange = (e) => {
-    setColourForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
-    setColourFormError('');
-    setColourFormSuccess('');
-  };
-
-  const handleAddColour = async (e) => {
-    e.preventDefault();
-    setColourFormError('');
-    setColourFormSuccess('');
-    try {
-      const res = await addColour({
-        colourName: colourForm.colourName,
-        colourCode: colourForm.colourCode
-      });
-      if (res.data.warning) {
-        setColourFormSuccess(res.data.warning);
-      } else {
-        setColourFormSuccess('Colour added successfully.');
-      }
-      setColourForm({ colourName: '', colourCode: '', pickedColour: '#5B2D8E' });
-      fetchAll();
-    } catch (err) {
-      setColourFormError(err.response?.data || 'Failed to add colour.');
-    }
-  };
-
   // --- Assign Colour ---
   const getAssignForm = (variantId) => assignForms[variantId] || {
     selectedColourId: '',
@@ -204,12 +169,6 @@ const CarCatalogue = () => {
             <h1>Car Catalogue</h1>
             <p>Manage all car models, variants and colours.</p>
           </div>
-          <button
-            className="btn-secondary-outline"
-            onClick={() => setShowColourPanel(!showColourPanel)}
-          >
-            {showColourPanel ? 'Hide Colour Manager' : 'Manage Colours'}
-          </button>
         </div>
 
         {error && <div className="alert alert-error">{error}</div>}
@@ -354,20 +313,22 @@ const CarCatalogue = () => {
                                             />
                                           </div>
                                           <div className="form-group">
-                                            <label>Colour Code *</label>
+                                            <label>Colour Code</label>
                                             <div className="colour-input-row">
                                               <input
                                                 type="color"
                                                 value={getAssignForm(variant.id).pickedColour}
-                                                onChange={(e) => handleAssignFormChange(variant.id, 'pickedColour', e.target.value)}
+                                                onChange={(e) => {
+                                                  handleAssignFormChange(variant.id, 'pickedColour', e.target.value);
+                                                  handleAssignFormChange(variant.id, 'colourCode', e.target.value); // auto-fill the code
+                                                }}
                                                 className="colour-picker"
                                                 title="Pick a colour for reference"
                                               />
                                               <input
                                                 value={getAssignForm(variant.id).colourCode}
                                                 onChange={(e) => handleAssignFormChange(variant.id, 'colourCode', e.target.value)}
-                                                placeholder="e.g. RBP or #1A1A2E"
-                                                required
+                                                placeholder="e.g. #1A2B3C or RBP (editable)"
                                               />
                                             </div>
                                           </div>
@@ -437,71 +398,6 @@ const CarCatalogue = () => {
             </div>
           </div>
 
-          {/* Right: Colour Manager Panel */}
-          {showColourPanel && (
-            <div className="colours-section">
-              <div className="section-card">
-                <h3 className="section-title">Add New Colour</h3>
-                <form onSubmit={handleAddColour} className="inline-form">
-                  <div className="form-group">
-                    <label>Colour Name *</label>
-                    <input
-                      name="colourName"
-                      value={colourForm.colourName}
-                      onChange={handleColourFormChange}
-                      placeholder="e.g. Abyss Black"
-                      required
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Colour Code *</label>
-                    <div className="colour-input-row">
-                      <input
-                        type="color"
-                        name="pickedColour"
-                        value={colourForm.pickedColour}
-                        onChange={handleColourFormChange}
-                        className="colour-picker"
-                        title="Pick a colour for reference"
-                      />
-                      <input
-                        name="colourCode"
-                        value={colourForm.colourCode}
-                        onChange={handleColourFormChange}
-                        placeholder="e.g. RBP or #1A1A2E"
-                        required
-                      />
-                    </div>
-                  </div>
-                  {colourFormError && <div className="alert alert-error">{colourFormError}</div>}
-                  {colourFormSuccess && <div className="alert alert-success">{colourFormSuccess}</div>}
-                  <button type="submit" className="btn-primary">+ Add Colour</button>
-                </form>
-              </div>
-
-              <div className="section-card">
-                <h3 className="section-title">All Colours ({colours.length})</h3>
-                {colours.length === 0 ? (
-                  <div className="empty-state">No colours added yet.</div>
-                ) : (
-                  <div className="colour-list">
-                    {colours.map(colour => (
-                      <div key={colour.id} className="colour-list-item">
-                        <div
-                          className="colour-preview"
-                          style={{ background: colour.colourCode.startsWith('#') ? colour.colourCode : '#E0E0E0' }}
-                        />
-                        <div className="colour-details">
-                          <span className="colour-list-name">{colour.colourName}</span>
-                          <span className="colour-list-code">{colour.colourCode}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </AdminLayout>

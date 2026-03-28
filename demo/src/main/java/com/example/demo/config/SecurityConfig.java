@@ -98,6 +98,7 @@ public class SecurityConfig {
 
                 // ── STOCK REQUESTS ──
                 .requestMatchers(HttpMethod.GET, "/api/admin/stock-requests/**").hasAuthority("ROLE_ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/admin/stock-requests/**/dispatch").hasAuthority("ROLE_ADMIN") // ✅ NEW
                 .requestMatchers(HttpMethod.PUT, "/api/admin/stock-requests/**").hasAuthority("ROLE_ADMIN")
                 .requestMatchers(HttpMethod.GET, "/api/admin/invoices/**").hasAuthority("ROLE_ADMIN")
                 .requestMatchers(HttpMethod.GET, "/api/dealer/stock-requests/**").hasAuthority("ROLE_DEALER")
@@ -122,7 +123,7 @@ public class SecurityConfig {
 
                 // ── PAYMENTS ──
                 .requestMatchers(HttpMethod.GET, "/api/dealer/payments").hasAuthority("ROLE_DEALER")
-                .requestMatchers(HttpMethod.GET, "/api/admin/payments/**").hasAuthority("ROLE_ADMIN")
+
                 .requestMatchers(HttpMethod.GET, "/api/admin/audit-logs/**").hasAuthority("ROLE_ADMIN")
 
                 // ── EMPLOYEES ──
@@ -138,6 +139,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.DELETE, "/api/dealer/employees/**").hasAuthority("ROLE_DEALER")
 
                 // ── CUSTOMERS ──
+                .requestMatchers(HttpMethod.GET, "/api/admin/customers/by-dealer").hasAuthority("ROLE_ADMIN")
                 .requestMatchers(HttpMethod.GET, "/api/admin/customers/**").hasAuthority("ROLE_ADMIN")
                 .requestMatchers(HttpMethod.GET, "/api/dealer/customers/**").hasAuthority("ROLE_DEALER")
 

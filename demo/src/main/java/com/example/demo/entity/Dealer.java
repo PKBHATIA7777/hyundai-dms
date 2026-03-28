@@ -22,7 +22,7 @@ public class Dealer {
     @Column(unique = true)
     private String email;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "VARCHAR(20) DEFAULT 'ACTIVE'")
     private String status = "ACTIVE";
 
     public Long getId() { return id; }

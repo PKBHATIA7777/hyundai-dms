@@ -2,19 +2,20 @@ package com.example.demo.controller;
 
 import com.example.demo.entity.Customer;
 import com.example.demo.entity.Sale;
+import com.example.demo.entity.Dealer;
 import com.example.demo.repository.CustomerRepository;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.repository.SaleRepository;
+import com.example.demo.repository.DealerRepository;
 import com.example.demo.entity.User;
 import com.example.demo.dto.ApiResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api")
@@ -28,6 +29,9 @@ public class CustomerController {
 
     @Autowired
     private SaleRepository saleRepository;
+
+    @Autowired
+    private DealerRepository dealerRepository;
 
     // -------------------------------------------------------
     // ADMIN — Get all customers in the system
@@ -47,7 +51,57 @@ public class CustomerController {
                 customers = customerRepository.findAll();
             }
 
-            return ResponseEntity.ok(customers);
+            // Add dealerName to response
+            List<Map<String, Object>> result = customers.stream().map(customer -> {
+                Map<String, Object> map = new LinkedHashMap<>();
+                map.put("customer", customer);
+
+                String dealerName = saleRepository.findAll().stream()
+                        .filter(s -> s.getCustomer() != null
+                                && s.getCustomer().getId().equals(customer.getId()))
+                        .map(s -> s.getDealer() != null ? s.getDealer().getName() : null)
+                        .filter(Objects::nonNull)
+                        .findFirst()
+                        .orElse(null);
+
+                map.put("dealerName", dealerName);
+                return map;
+            }).collect(Collectors.toList());
+
+            return ResponseEntity.ok(result);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    // -------------------------------------------------------
+    // ADMIN — Get customers grouped by dealer
+    // GET /api/admin/customers/by-dealer
+    // -------------------------------------------------------
+    @GetMapping("/admin/customers/by-dealer")
+    public ResponseEntity<?> getCustomersGroupedByDealer() {
+        try {
+            List<Dealer> dealers = dealerRepository.findAll();
+
+            List<Map<String, Object>> result = dealers.stream().map(dealer -> {
+                Map<String, Object> entry = new LinkedHashMap<>();
+                entry.put("dealer", dealer);
+
+                List<Customer> customers = saleRepository.findAll().stream()
+                        .filter(s -> s.getDealer() != null
+                                && s.getDealer().getId().equals(dealer.getId()))
+                        .map(Sale::getCustomer)
+                        .filter(Objects::nonNull)
+                        .distinct()
+                        .collect(Collectors.toList());
+
+                entry.put("customers", customers);
+                entry.put("customerCount", customers.size());
+
+                return entry;
+            }).collect(Collectors.toList());
+
+            return ResponseEntity.ok(result);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -92,7 +146,7 @@ public class CustomerController {
 
     // -------------------------------------------------------
     // DEALER — Search customers by phone (for booking lookup)
-    // GET /api/dealer/customers/search?phone=9876543210
+    // GET /api/dealer/customers/search
     // -------------------------------------------------------
     @GetMapping("/dealer/customers/search")
     public ResponseEntity<?> searchCustomerByPhone(

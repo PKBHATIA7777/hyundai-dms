@@ -9,6 +9,7 @@ public class AppConstants {
     public static final String STOCK_REQUEST_PENDING = "PENDING";
     public static final String STOCK_REQUEST_APPROVED = "APPROVED";
     public static final String STOCK_REQUEST_REJECTED = "REJECTED";
+    public static final String STOCK_REQUEST_DISPATCHED = "DISPATCHED";
 
     // Booking
     public static final String BOOKING_PENDING = "PENDING";

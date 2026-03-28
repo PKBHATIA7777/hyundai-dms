@@ -1,7 +1,3 @@
-
-
-
-
 package com.example.demo.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -25,7 +21,8 @@ public class DealerInventory {
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Dealer dealer;
 
-    @ManyToOne
+    // ✅ UPDATED: FetchType set to EAGER to ensure car is loaded with variant
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "variant_id", nullable = false)
     @JsonIgnoreProperties({"availableColours", "hibernateLazyInitializer", "handler"})
     private Variant variant;

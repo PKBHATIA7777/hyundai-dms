@@ -19,6 +19,12 @@ const DealerLeads = () => {
     const [leadsLoading, setLeadsLoading] = useState(true);
     const [activeFilter, setActiveFilter] = useState('ALL');
 
+    // Search state
+    const [search, setSearch] = useState('');
+
+    // Form visibility state
+    const [showForm, setShowForm] = useState(false);
+
     // Cars for variant dropdown
     const [cars, setCars] = useState([]);
     const [selectedCarId, setSelectedCarId] = useState('');
@@ -51,7 +57,7 @@ const DealerLeads = () => {
             setVariants([]);
             setForm(prev => ({ ...prev, variantId: '' }));
         }
-    }, [selectedCarId]);
+    }, [selectedCarId, cars]);
 
     const fetchLeads = async () => {
         setLeadsLoading(true);
@@ -134,10 +140,16 @@ const DealerLeads = () => {
         }
     };
 
-    // Filter leads
-    const filteredLeads = activeFilter === 'ALL'
-        ? leads
-        : leads.filter(l => l.status === activeFilter);
+    // Filter leads by status and search
+    const filteredLeads = (activeFilter === 'ALL' ? leads : leads.filter(l => l.status === activeFilter))
+        .filter(l => {
+            if (!search) return true;
+            const q = search.toLowerCase();
+            return (
+                `${l.customer?.firstName} ${l.customer?.lastName}`.toLowerCase().includes(q) ||
+                l.customer?.phone?.includes(q)
+            );
+        });
 
     // Count per status
     const countByStatus = (status) => leads.filter(l => l.status === status).length;
@@ -168,6 +180,12 @@ const DealerLeads = () => {
                         <h1>Leads</h1>
                         <p>Manage your sales pipeline and track customer interest.</p>
                     </div>
+                    <button 
+                        className="btn-primary" 
+                        onClick={() => setShowForm(true)}
+                    >
+                        + New Lead
+                    </button>
                 </div>
 
                 {/* Pipeline Filter Bar */}
@@ -186,210 +204,227 @@ const DealerLeads = () => {
                     ))}
                 </div>
 
-                <div className="leads-layout">
-
-                    {/* Create Lead Form */}
-                    <div className="section-card">
-                        <h3 className="section-title">Add New Lead</h3>
-                        <form onSubmit={handleCreateLead} className="inline-form">
-
-                            <div className="form-row">
-                                <div className="form-group">
-                                    <label>First Name *</label>
-                                    <input
-                                        name="firstName"
-                                        value={form.firstName}
-                                        onChange={handleFormChange}
-                                        placeholder="Rahul"
-                                        required
-                                    />
-                                </div>
-                                <div className="form-group">
-                                    <label>Last Name *</label>
-                                    <input
-                                        name="lastName"
-                                        value={form.lastName}
-                                        onChange={handleFormChange}
-                                        placeholder="Kumar"
-                                        required
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="form-group">
-                                <label>Phone *</label>
-                                <input
-                                    name="phone"
-                                    value={form.phone}
-                                    onChange={handleFormChange}
-                                    placeholder="9876543210"
-                                    required
-                                />
-                            </div>
-
-                            <div className="form-group">
-                                <label>Email</label>
-                                <input
-                                    name="email"
-                                    type="email"
-                                    value={form.email}
-                                    onChange={handleFormChange}
-                                    placeholder="rahul@email.com"
-                                />
-                            </div>
-
-                            <div className="form-group">
-                                <label>Source</label>
-                                <select
-                                    name="source"
-                                    value={form.source}
-                                    onChange={handleFormChange}
-                                >
-                                    <option value="">-- Select source --</option>
-                                    <option value="Walk-in">Walk-in</option>
-                                    <option value="Phone">Phone</option>
-                                    <option value="Online">Online</option>
-                                    <option value="Referral">Referral</option>
-                                </select>
-                            </div>
-
-                            <div className="form-group">
-                                <label>Interested In — Car</label>
-                                <select
-                                    value={selectedCarId}
-                                    onChange={(e) => setSelectedCarId(e.target.value)}
-                                >
-                                    <option value="">-- Select car --</option>
-                                    {cars.map(c => (
-                                        <option key={c.id} value={c.id}>{c.modelName}</option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            {selectedCarId && (
-                                <div className="form-group">
-                                    <label>Interested In — Variant</label>
-                                    <select
-                                        name="variantId"
-                                        value={form.variantId}
-                                        onChange={handleFormChange}
-                                    >
-                                        <option value="">-- Select variant --</option>
-                                        {variants.map(v => (
-                                            <option key={v.id} value={v.id}>
-                                                {v.variantName} — ₹{Number(v.price).toLocaleString('en-IN')}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-                            )}
-
-                            <div className="form-group">
-                                <label>Notes</label>
-                                <textarea
-                                    name="notes"
-                                    value={form.notes}
-                                    onChange={handleFormChange}
-                                    placeholder="Any additional notes..."
-                                />
-                            </div>
-
-                            {formError && <div className="alert alert-error">{formError}</div>}
-                            {formSuccess && <div className="alert alert-success">{formSuccess}</div>}
-
-                            <button
-                                type="submit"
-                                className="btn-primary"
-                                disabled={formLoading}
-                            >
-                                {formLoading ? 'Creating...' : '+ Add Lead'}
-                            </button>
-
-                        </form>
-                    </div>
-
-                    {/* Leads List */}
-                    <div>
-                        {leadsLoading ? (
-                            <div className="loading-state">Loading leads...</div>
-                        ) : filteredLeads.length === 0 ? (
-                            <div className="empty-state">
-                                {activeFilter === 'ALL'
-                                    ? 'No leads yet. Add your first lead.'
-                                    : `No leads with status ${activeFilter}.`
-                                }
-                            </div>
-                        ) : (
-                            <div className="leads-list">
-                                {filteredLeads.map(lead => (
-                                    <div
-                                        key={lead.id}
-                                        className={`lead-card status-${lead.status}`}
-                                    >
-                                        <div className="lead-card-top">
-                                            <div>
-                                                <div className="lead-customer-name">
-                                                    {lead.customer?.firstName} {lead.customer?.lastName}
-                                                </div>
-                                                <div className="lead-customer-phone">
-                                                    {lead.customer?.phone}
-                                                </div>
-                                            </div>
-                                            <span className={`status-badge status-${lead.status}`}>
-                                                {lead.status}
-                                            </span>
-                                        </div>
-
-                                        <div className="lead-card-meta">
-                                            {lead.source && (
-                                                <span className="lead-meta-item">
-                                                    📍 {lead.source}
-                                                </span>
-                                            )}
-                                            {lead.interestedVariant && (
-                                                <span className="lead-meta-item">
-                                                    🚗 {lead.interestedVariant.variantName}
-                                                </span>
-                                            )}
-                                            <span className="lead-meta-item">
-                                                📅 {formatDate(lead.createdAt)}
-                                            </span>
-                                        </div>
-
-                                        {lead.notes && (
-                                            <div className="lead-notes">
-                                                {lead.notes}
-                                            </div>
-                                        )}
-
-                                        {/* Status Update Buttons */}
-                                        {STATUS_FLOW[lead.status]?.length > 0 && (
-                                            <div className="lead-card-actions">
-                                                <span className="status-update-label">
-                                                    Move to:
-                                                </span>
-                                                {STATUS_FLOW[lead.status].map(nextStatus => (
-                                                    <button
-                                                        key={nextStatus}
-                                                        className={`status-btn status-btn-${nextStatus.toLowerCase()}`}
-                                                        onClick={() => handleStatusUpdate(lead.id, nextStatus)}
-                                                        disabled={statusLoading === lead.id + nextStatus}
-                                                    >
-                                                        {statusLoading === lead.id + nextStatus
-                                                            ? '...'
-                                                            : nextStatus
-                                                        }
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        )}
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-
+                {/* Search Bar */}
+                <div className="search-bar">
+                    <input
+                        type="text"
+                        placeholder="Search by name or phone..."
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        className="search-input"
+                    />
                 </div>
+
+                {/* Leads List */}
+                <div className="leads-list-container">
+                    {leadsLoading ? (
+                        <div className="loading-state">Loading leads...</div>
+                    ) : filteredLeads.length === 0 ? (
+                        <div className="empty-state">
+                            {activeFilter === 'ALL'
+                                ? (search ? 'No leads match your search.' : 'No leads yet. Click "+ New Lead" to add your first lead.')
+                                : `No leads with status ${activeFilter}.`
+                            }
+                        </div>
+                    ) : (
+                        <div className="leads-list">
+                            {filteredLeads.map(lead => (
+                                <div
+                                    key={lead.id}
+                                    className={`lead-card status-${lead.status}`}
+                                >
+                                    <div className="lead-card-top">
+                                        <div>
+                                            <div className="lead-customer-name">
+                                                {lead.customer?.firstName} {lead.customer?.lastName}
+                                            </div>
+                                            <div className="lead-customer-phone">
+                                                {lead.customer?.phone}
+                                            </div>
+                                        </div>
+                                        <span className={`status-badge status-${lead.status}`}>
+                                            {lead.status}
+                                        </span>
+                                    </div>
+
+                                    <div className="lead-card-meta">
+                                        {lead.source && (
+                                            <span className="lead-meta-item">
+                                                📍 {lead.source}
+                                            </span>
+                                        )}
+                                        {lead.interestedVariant && (
+                                            <span className="lead-meta-item">
+                                                🚗 {lead.interestedVariant.variantName}
+                                            </span>
+                                        )}
+                                        <span className="lead-meta-item">
+                                            📅 {formatDate(lead.createdAt)}
+                                        </span>
+                                    </div>
+
+                                    {lead.notes && (
+                                        <div className="lead-notes">
+                                            {lead.notes}
+                                        </div>
+                                    )}
+
+                                    {/* Status Update Buttons */}
+                                    {STATUS_FLOW[lead.status]?.length > 0 && (
+                                        <div className="lead-card-actions">
+                                            <span className="status-update-label">
+                                                Move to:
+                                            </span>
+                                            {STATUS_FLOW[lead.status].map(nextStatus => (
+                                                <button
+                                                    key={nextStatus}
+                                                    className={`status-btn status-btn-${nextStatus.toLowerCase()}`}
+                                                    onClick={() => handleStatusUpdate(lead.id, nextStatus)}
+                                                    disabled={statusLoading === lead.id + nextStatus}
+                                                >
+                                                    {statusLoading === lead.id + nextStatus
+                                                        ? '...'
+                                                        : nextStatus
+                                                    }
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+
+                {/* Slide-in Form Panel */}
+                {showForm && (
+                    <div className="slide-panel-overlay" onClick={() => setShowForm(false)}>
+                        <div className="slide-panel" onClick={e => e.stopPropagation()}>
+                            <div className="slide-panel-header">
+                                <h3>New Lead</h3>
+                                <button className="slide-panel-close" onClick={() => setShowForm(false)}>✕</button>
+                            </div>
+                            <div className="slide-panel-body">
+                                <form onSubmit={handleCreateLead} className="inline-form">
+
+                                    <div className="form-row">
+                                        <div className="form-group">
+                                            <label>First Name *</label>
+                                            <input
+                                                name="firstName"
+                                                value={form.firstName}
+                                                onChange={handleFormChange}
+                                                placeholder="Rahul"
+                                                required
+                                            />
+                                        </div>
+                                        <div className="form-group">
+                                            <label>Last Name *</label>
+                                            <input
+                                                name="lastName"
+                                                value={form.lastName}
+                                                onChange={handleFormChange}
+                                                placeholder="Kumar"
+                                                required
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label>Phone *</label>
+                                        <input
+                                            name="phone"
+                                            value={form.phone}
+                                            onChange={handleFormChange}
+                                            placeholder="9876543210"
+                                            required
+                                        />
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label>Email</label>
+                                        <input
+                                            name="email"
+                                            type="email"
+                                            value={form.email}
+                                            onChange={handleFormChange}
+                                            placeholder="rahul@email.com"
+                                        />
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label>Source</label>
+                                        <select
+                                            name="source"
+                                            value={form.source}
+                                            onChange={handleFormChange}
+                                        >
+                                            <option value="">-- Select source --</option>
+                                            <option value="Walk-in">Walk-in</option>
+                                            <option value="Phone">Phone</option>
+                                            <option value="Online">Online</option>
+                                            <option value="Referral">Referral</option>
+                                        </select>
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label>Interested In — Car</label>
+                                        <select
+                                            value={selectedCarId}
+                                            onChange={(e) => setSelectedCarId(e.target.value)}
+                                        >
+                                            <option value="">-- Select car --</option>
+                                            {cars.map(c => (
+                                                <option key={c.id} value={c.id}>{c.modelName}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    {selectedCarId && (
+                                        <div className="form-group">
+                                            <label>Interested In — Variant</label>
+                                            <select
+                                                name="variantId"
+                                                value={form.variantId}
+                                                onChange={handleFormChange}
+                                            >
+                                                <option value="">-- Select variant --</option>
+                                                {variants.map(v => (
+                                                    <option key={v.id} value={v.id}>
+                                                        {v.variantName} — ₹{Number(v.price).toLocaleString('en-IN')}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    )}
+
+                                    <div className="form-group">
+                                        <label>Notes</label>
+                                        <textarea
+                                            name="notes"
+                                            value={form.notes}
+                                            onChange={handleFormChange}
+                                            placeholder="Any additional notes..."
+                                        />
+                                    </div>
+
+                                    {formError && <div className="alert alert-error">{formError}</div>}
+                                    {formSuccess && <div className="alert alert-success">{formSuccess}</div>}
+
+                                    <button
+                                        type="submit"
+                                        className="btn-primary"
+                                        disabled={formLoading}
+                                    >
+                                        {formLoading ? 'Creating...' : '+ Add Lead'}
+                                    </button>
+
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
             </div>
         </DealerLayout>
     );

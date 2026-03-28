@@ -108,7 +108,6 @@ public class StockRequestService {
     @Transactional
     public SupplyInvoice approveRequest(Long requestId) {
 
-        // Step 1: Find and validate request
         StockRequest request = stockRequestRepository.findById(requestId)
                 .orElseThrow(() -> new RuntimeException("Stock request not found."));
 
@@ -116,18 +115,15 @@ public class StockRequestService {
             throw new RuntimeException("Only PENDING requests can be approved.");
         }
 
-        // Step 2: Mark request as APPROVED
         request.setStatus(AppConstants.STOCK_REQUEST_APPROVED);
         stockRequestRepository.save(request);
 
-        // Step 3: Generate invoice number
         String timestamp = LocalDateTime.now()
                 .format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"));
         String dealerCode = request.getDealer().getDealerCode()
                 .replace("@", "");
         String invoiceNumber = "INV-" + dealerCode + "-" + timestamp;
 
-        // Step 4: Create supply invoice
         SupplyInvoice invoice = new SupplyInvoice();
         invoice.setDealer(request.getDealer());
         invoice.setStockRequest(request);
@@ -135,7 +131,6 @@ public class StockRequestService {
         invoice.setStatus("GENERATED");
         SupplyInvoice savedInvoice = supplyInvoiceRepository.save(invoice);
 
-        // Step 5: Create invoice item
         SupplyInvoiceItem item = new SupplyInvoiceItem();
         item.setInvoice(savedInvoice);
         item.setVariant(request.getVariant());
@@ -143,7 +138,6 @@ public class StockRequestService {
         item.setQuantity(request.getRequestedQuantity());
         supplyInvoiceItemRepository.save(item);
 
-        // Step 6: Increase dealer inventory
         inventoryService.addStock(
                 request.getDealer().getId(),
                 request.getVariant().getId(),
@@ -151,7 +145,6 @@ public class StockRequestService {
                 request.getRequestedQuantity()
         );
 
-        // Audit log: Log the approval
         auditLogService.log(
             "APPROVE_STOCK_REQUEST",
             "Stock request #" + requestId + " approved. Invoice: " + invoiceNumber
@@ -160,6 +153,25 @@ public class StockRequestService {
         );
 
         return savedInvoice;
+    }
+
+    // -------------------------------------------------------
+    // ADMIN: Dispatch a request
+    // -------------------------------------------------------
+    @Transactional
+    public SupplyInvoice dispatchRequest(Long requestId) {
+        StockRequest request = stockRequestRepository.findById(requestId)
+                .orElseThrow(() -> new RuntimeException("Stock request not found."));
+
+        if (!request.getStatus().equals(AppConstants.STOCK_REQUEST_APPROVED)) {
+            throw new RuntimeException("Only APPROVED requests can be dispatched.");
+        }
+
+        request.setStatus("DISPATCHED");
+        stockRequestRepository.save(request);
+
+        return supplyInvoiceRepository.findByStockRequestId(requestId)
+                .orElseThrow(() -> new RuntimeException("Invoice not found for this request."));
     }
 
     // -------------------------------------------------------
@@ -175,7 +187,6 @@ public class StockRequestService {
             throw new RuntimeException("Only PENDING requests can be rejected.");
         }
 
-        // Audit log: Log the rejection
         auditLogService.log(
             "REJECT_STOCK_REQUEST",
             "Stock request #" + requestId + " rejected. Dealer: " + request.getDealer().getName(),

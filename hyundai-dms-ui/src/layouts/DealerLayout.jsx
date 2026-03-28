@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import api from '../services/api';
+import Footer from '../components/Footer'; // ✅ Added import
 import './DealerLayout.css';
 
 const DealerLayout = ({ children }) => {
@@ -107,6 +108,7 @@ const DealerLayout = ({ children }) => {
 
         <main className="main-content">
           {children}
+          <Footer /> {/* ✅ Added Footer here */}
         </main>
       </div>
     </div>

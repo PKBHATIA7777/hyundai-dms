@@ -28,6 +28,9 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* ✅ Root redirect FIX */}
+        <Route path="/" element={<Navigate to="/login" replace />} />
+
         <Route path="/login" element={<Login />} />
 
         {/* ── Admin Routes ── */}

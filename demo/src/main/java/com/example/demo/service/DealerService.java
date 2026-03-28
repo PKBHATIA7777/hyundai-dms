@@ -84,10 +84,12 @@ public class DealerService {
         dealer.setCity(dto.getCity());
         dealer.setContactNumber(dto.getContactNumber());
         dealer.setAddress(dto.getAddress());
-        dealer.setStatus("ACTIVE");
 
         String dealerCode = generateDealerCode(dto.getName());
         dealer.setDealerCode(dealerCode);
+
+        // ✅ Explicit guard — never rely on DB default alone
+        dealer.setStatus("ACTIVE");
 
         Dealer savedDealer = dealerRepository.save(dealer);
 

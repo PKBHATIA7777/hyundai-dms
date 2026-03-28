@@ -18,7 +18,8 @@ const DealerEmployees = () => {
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading]     = useState(true);
 
-  // Add form
+  // Add form modal
+  const [showAddForm, setShowAddForm] = useState(false);
   const [form, setForm]           = useState(EMPTY_FORM);
   const [formError, setFormError] = useState('');
   const [formSuccess, setFormSuccess] = useState('');
@@ -29,6 +30,10 @@ const DealerEmployees = () => {
   const [editForm, setEditForm]         = useState(EMPTY_FORM);
   const [editError, setEditError]       = useState('');
   const [editLoading, setEditLoading]   = useState(false);
+
+  // Search and filter
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
 
   // Action loading per row
   const [actionLoading, setActionLoading] = useState(null);
@@ -49,6 +54,17 @@ const DealerEmployees = () => {
   useEffect(() => {
     fetchEmployees();
   }, [fetchEmployees]);
+
+  // Filtered employees
+  const filtered = employees.filter(e => {
+    const q = search.toLowerCase();
+    const matchSearch = !q ||
+      `${e.firstName} ${e.lastName}`.toLowerCase().includes(q) ||
+      e.phone?.includes(q) ||
+      e.designation?.toLowerCase().includes(q);
+    const matchStatus = !statusFilter || e.status === statusFilter;
+    return matchSearch && matchStatus;
+  });
 
   // ── Add Employee ──
   const handleFormChange = (e) => {
@@ -72,6 +88,7 @@ const DealerEmployees = () => {
       });
       setFormSuccess('Employee added successfully.');
       setForm(EMPTY_FORM);
+      setShowAddForm(false);
       fetchEmployees();
     } catch (err) {
       setFormError(
@@ -82,6 +99,13 @@ const DealerEmployees = () => {
     } finally {
       setFormLoading(false);
     }
+  };
+
+  const closeAddModal = () => {
+    setShowAddForm(false);
+    setForm(EMPTY_FORM);
+    setFormError('');
+    setFormSuccess('');
   };
 
   // ── Toggle Status ──
@@ -166,6 +190,9 @@ const DealerEmployees = () => {
             <h1>Employees</h1>
             <p>Manage your dealership team members.</p>
           </div>
+          <button className="btn-primary" onClick={() => setShowAddForm(true)}>
+            + Add Employee
+          </button>
         </div>
 
         {/* Stats Row */}
@@ -188,171 +215,209 @@ const DealerEmployees = () => {
           </div>
         </div>
 
-        <div className="employees-layout">
-
-          {/* Add Employee Form */}
-          <div className="section-card">
-            <h3 className="section-title">Add New Employee</h3>
-            <form onSubmit={handleCreate} className="inline-form">
-
-              <div className="form-row">
-                <div className="form-group">
-                  <label>First Name *</label>
-                  <input
-                    name="firstName"
-                    value={form.firstName}
-                    onChange={handleFormChange}
-                    placeholder="Ravi"
-                    required
-                  />
-                </div>
-                <div className="form-group">
-                  <label>Last Name *</label>
-                  <input
-                    name="lastName"
-                    value={form.lastName}
-                    onChange={handleFormChange}
-                    placeholder="Kumar"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label>Phone *</label>
-                <input
-                  name="phone"
-                  value={form.phone}
-                  onChange={handleFormChange}
-                  placeholder="9876543210"
-                  required
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Email</label>
-                <input
-                  name="email"
-                  type="email"
-                  value={form.email}
-                  onChange={handleFormChange}
-                  placeholder="ravi@dealer.com"
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Designation</label>
-                <select name="designation" value={form.designation} onChange={handleFormChange}>
-                  <option value="">-- Select designation --</option>
-                  <option value="Sales Executive">Sales Executive</option>
-                  <option value="Senior Sales Executive">Senior Sales Executive</option>
-                  <option value="Sales Manager">Sales Manager</option>
-                  <option value="Finance Manager">Finance Manager</option>
-                  <option value="Service Advisor">Service Advisor</option>
-                  <option value="Team Lead">Team Lead</option>
-                  <option value="Other">Other</option>
-                </select>
-              </div>
-
-              {formError   && <div className="alert alert-error">{formError}</div>}
-              {formSuccess && <div className="alert alert-success">{formSuccess}</div>}
-
-              <button type="submit" className="btn-primary" disabled={formLoading}>
-                {formLoading ? 'Adding...' : '+ Add Employee'}
-              </button>
-
-            </form>
-          </div>
-
-          {/* Employees Table */}
-          <div className="table-wrapper">
-            <div className="table-header">
-              <h3>My Team ({employees.length})</h3>
+        {/* Employees Table */}
+        <div className="table-wrapper">
+          {/* Search and Filter */}
+          <div className="table-header">
+            <h3>My Team ({filtered.length})</h3>
+            <div className="table-controls">
+              <input
+                type="text"
+                placeholder="Search by name, phone, designation..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="search-input"
+                autoComplete="off"
+              />
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="filter-select"
+                autoComplete="off"
+              >
+                <option value="">All Status</option>
+                <option value="ACTIVE">Active</option>
+                <option value="INACTIVE">Inactive</option>
+              </select>
               <button className="btn-refresh" onClick={fetchEmployees}>
                 Refresh
               </button>
             </div>
-
-            {loading ? (
-              <div className="loading-state">Loading employees...</div>
-            ) : employees.length === 0 ? (
-              <div className="empty-state">
-                No employees added yet. Add your first team member.
-              </div>
-            ) : (
-              <div className="table-scroll">
-                <table className="data-table">
-                  <thead>
-                    <tr>
-                      <th>Employee</th>
-                      <th>Phone</th>
-                      <th>Email</th>
-                      <th>Designation</th>
-                      <th>Status</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {employees.map(emp => (
-                      <tr key={emp.id}>
-                        <td>
-                          <div className="employee-cell">
-                            <div className="employee-avatar">
-                              {getInitials(emp.firstName, emp.lastName)}
-                            </div>
-                            <div>
-                              <div className="employee-name">
-                                {emp.firstName} {emp.lastName}
-                              </div>
-                              <div className="employee-designation">
-                                {emp.designation || '—'}
-                              </div>
-                            </div>
-                          </div>
-                        </td>
-                        <td>{emp.phone || '—'}</td>
-                        <td>{emp.email || '—'}</td>
-                        <td>{emp.designation || '—'}</td>
-                        <td>
-                          <span className={`status-badge status-${emp.status?.toLowerCase()}`}>
-                            {emp.status}
-                          </span>
-                        </td>
-                        <td>
-                          <div className="actions-cell">
-                            <button
-                              className="btn-sm btn-edit"
-                              onClick={() => openEdit(emp)}
-                            >
-                              Edit
-                            </button>
-                            {emp.status === 'ACTIVE' ? (
-                              <button
-                                className="btn-sm btn-danger"
-                                onClick={() => handleToggleStatus(emp)}
-                                disabled={actionLoading === emp.id}
-                              >
-                                {actionLoading === emp.id ? '...' : 'Deactivate'}
-                              </button>
-                            ) : (
-                              <button
-                                className="btn-sm btn-success"
-                                onClick={() => handleToggleStatus(emp)}
-                                disabled={actionLoading === emp.id}
-                              >
-                                {actionLoading === emp.id ? '...' : 'Activate'}
-                              </button>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
           </div>
+
+          {loading ? (
+            <div className="loading-state">Loading employees...</div>
+          ) : filtered.length === 0 ? (
+            <div className="empty-state">
+              {employees.length === 0 
+                ? 'No employees added yet. Click "+ Add Employee" to get started.' 
+                : 'No employees match your search criteria.'}
+            </div>
+          ) : (
+            <div className="table-scroll">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Employee</th>
+                    <th>Phone</th>
+                    <th>Email</th>
+                    <th>Designation</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filtered.map(emp => (
+                    <tr key={emp.id}>
+                      <td>
+                        <div className="employee-cell">
+                          <div className="employee-avatar">
+                            {getInitials(emp.firstName, emp.lastName)}
+                          </div>
+                          <div>
+                            <div className="employee-name">
+                              {emp.firstName} {emp.lastName}
+                            </div>
+                            <div className="employee-designation">
+                              {emp.designation || '—'}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td>{emp.phone || '—'}</td>
+                      <td>{emp.email || '—'}</td>
+                      <td>{emp.designation || '—'}</td>
+                      <td>
+                        <span className={`status-badge status-${emp.status?.toLowerCase()}`}>
+                          {emp.status}
+                        </span>
+                      </td>
+                      <td>
+                        <div className="actions-cell">
+                          <button
+                            className="btn-sm btn-edit"
+                            onClick={() => openEdit(emp)}
+                          >
+                            Edit
+                          </button>
+                          {emp.status === 'ACTIVE' ? (
+                            <button
+                              className="btn-sm btn-danger"
+                              onClick={() => handleToggleStatus(emp)}
+                              disabled={actionLoading === emp.id}
+                            >
+                              {actionLoading === emp.id ? '...' : 'Deactivate'}
+                            </button>
+                          ) : (
+                            <button
+                              className="btn-sm btn-success"
+                              onClick={() => handleToggleStatus(emp)}
+                              disabled={actionLoading === emp.id}
+                            >
+                              {actionLoading === emp.id ? '...' : 'Activate'}
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
+
+        {/* Add Employee Modal */}
+        {showAddForm && (
+          <div className="modal-overlay" onClick={closeAddModal}>
+            <div className="modal" onClick={e => e.stopPropagation()}>
+              <div className="modal-header">
+                <h3>Add New Employee</h3>
+                <button className="modal-close" onClick={closeAddModal}>✕</button>
+              </div>
+              <form onSubmit={handleCreate} className="modal-form">
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>First Name *</label>
+                    <input
+                      name="firstName"
+                      value={form.firstName}
+                      onChange={handleFormChange}
+                      placeholder="Ravi"
+                      required
+                      autoComplete="off"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Last Name *</label>
+                    <input
+                      name="lastName"
+                      value={form.lastName}
+                      onChange={handleFormChange}
+                      placeholder="Kumar"
+                      required
+                      autoComplete="off"
+                    />
+                  </div>
+                </div>
+                <div className="form-group">
+                  <label>Phone *</label>
+                  <input
+                    name="phone"
+                    value={form.phone}
+                    onChange={handleFormChange}
+                    placeholder="9876543210"
+                    required
+                    autoComplete="off"
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Email</label>
+                  <input
+                    name="email"
+                    type="email"
+                    value={form.email}
+                    onChange={handleFormChange}
+                    placeholder="ravi@dealer.com"
+                    autoComplete="new-password"
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Designation</label>
+                  <select 
+                    name="designation" 
+                    value={form.designation} 
+                    onChange={handleFormChange}
+                    autoComplete="off"
+                  >
+                    <option value="">-- Select designation --</option>
+                    <option value="Sales Executive">Sales Executive</option>
+                    <option value="Senior Sales Executive">Senior Sales Executive</option>
+                    <option value="Sales Manager">Sales Manager</option>
+                    <option value="Finance Manager">Finance Manager</option>
+                    <option value="Service Advisor">Service Advisor</option>
+                    <option value="Team Lead">Team Lead</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+                {formError   && <div className="alert alert-error">{formError}</div>}
+                {formSuccess && <div className="alert alert-success">{formSuccess}</div>}
+                <div className="modal-actions">
+                  <button
+                    type="button"
+                    className="btn-secondary-outline"
+                    onClick={closeAddModal}
+                  >
+                    Cancel
+                  </button>
+                  <button type="submit" className="btn-primary" disabled={formLoading}>
+                    {formLoading ? 'Adding...' : '+ Add Employee'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
 
         {/* Edit Modal */}
         {editEmployee && (
@@ -371,6 +436,7 @@ const DealerEmployees = () => {
                       value={editForm.firstName}
                       onChange={handleEditChange}
                       required
+                      autoComplete="off"
                     />
                   </div>
                   <div className="form-group">
@@ -380,6 +446,7 @@ const DealerEmployees = () => {
                       value={editForm.lastName}
                       onChange={handleEditChange}
                       required
+                      autoComplete="off"
                     />
                   </div>
                 </div>
@@ -390,6 +457,7 @@ const DealerEmployees = () => {
                     value={editForm.phone}
                     onChange={handleEditChange}
                     required
+                    autoComplete="off"
                   />
                 </div>
                 <div className="form-group">
@@ -399,6 +467,7 @@ const DealerEmployees = () => {
                     type="email"
                     value={editForm.email}
                     onChange={handleEditChange}
+                    autoComplete="new-password"
                   />
                 </div>
                 <div className="form-group">
@@ -407,6 +476,7 @@ const DealerEmployees = () => {
                     name="designation"
                     value={editForm.designation}
                     onChange={handleEditChange}
+                    autoComplete="off"
                   >
                     <option value="">-- Select designation --</option>
                     <option value="Sales Executive">Sales Executive</option>

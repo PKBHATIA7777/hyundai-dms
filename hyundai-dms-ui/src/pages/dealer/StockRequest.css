@@ -247,3 +247,32 @@
     grid-template-columns: 1fr;
   }
 }
+
+
+
+
+.collapsible-section {
+  background: var(--white);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--grey-mid);
+  overflow: hidden;
+}
+.collapsible-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-dark);
+  background: transparent;
+  border: none;
+  width: 100%;
+  text-align: left;
+}
+.collapsible-header:hover { background: var(--grey-light); }
+.collapsible-arrow { font-size: 16px; transition: transform 0.2s; }
+.collapsible-arrow.open { transform: rotate(90deg); }
+.collapsible-body { border-top: 1px solid var(--grey-mid); }

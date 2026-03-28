@@ -23,6 +23,9 @@ const DealerStockRequest = () => {
   // Requests table
   const [requests, setRequests] = useState([]);
   const [tableLoading, setTableLoading] = useState(true);
+  
+  // Collapsible section state
+  const [requestsExpanded, setRequestsExpanded] = useState(false);
 
   useEffect(() => {
     fetchCars();
@@ -222,55 +225,70 @@ const DealerStockRequest = () => {
             </form>
           </div>
 
-          {/* My Requests Table */}
-          <div className="table-wrapper">
-            <div className="table-header">
-              <h3>My Requests ({requests.length})</h3>
-              <button className="btn-refresh" onClick={fetchMyRequests}>
-                Refresh
-              </button>
-            </div>
+          {/* Collapsible My Requests Section */}
+          <div className="collapsible-section">
+            <button
+              className="collapsible-header"
+              onClick={() => setRequestsExpanded(!requestsExpanded)}
+              type="button"
+            >
+              <span>My Requests ({requests.length})</span>
+              <span className={`collapsible-arrow ${requestsExpanded ? 'open' : ''}`}>▸</span>
+            </button>
+            
+            {requestsExpanded && (
+              <div className="collapsible-body">
+                <div className="table-wrapper">
+                  <div className="table-header">
+                    <h3>Recent Requests</h3>
+                    <button className="btn-refresh" onClick={fetchMyRequests}>
+                      Refresh
+                    </button>
+                  </div>
 
-            {tableLoading ? (
-              <div className="loading-state">Loading requests...</div>
-            ) : requests.length === 0 ? (
-              <div className="empty-state">No requests submitted yet.</div>
-            ) : (
-              <div className="table-scroll">
-                <table className="data-table">
-                  <thead>
-                    <tr>
-                      <th>Car</th>
-                      <th>Variant</th>
-                      <th>Colour</th>
-                      <th>Qty</th>
-                      <th>Date</th>
-                      <th>Status</th>
-                      <th>Notes</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {requests.map(req => (
-                      <tr key={req.id}>
-                        <td>{req.variant?.car?.modelName || '--'}</td>
-                        <td>{req.variant?.variantName}</td>
-                        <td>{req.colour?.colourName}</td>
-                        <td>{req.requestedQuantity}</td>
-                        <td>{formatDate(req.requestDate)}</td>
-                        <td>
-                          <span className={getStatusClass(req.status)}>
-                            {req.status}
-                          </span>
-                        </td>
-                        <td>
-                          <span className="notes-text">
-                            {req.notes || '--'}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                  {tableLoading ? (
+                    <div className="loading-state">Loading requests...</div>
+                  ) : requests.length === 0 ? (
+                    <div className="empty-state">No requests submitted yet.</div>
+                  ) : (
+                    <div className="table-scroll">
+                      <table className="data-table">
+                        <thead>
+                          <tr>
+                            <th>Car</th>
+                            <th>Variant</th>
+                            <th>Colour</th>
+                            <th>Qty</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Notes</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {requests.map(req => (
+                            <tr key={req.id}>
+                              <td>{req.variant?.car?.modelName || '--'}</td>
+                              <td>{req.variant?.variantName}</td>
+                              <td>{req.colour?.colourName}</td>
+                              <td>{req.requestedQuantity}</td>
+                              <td>{formatDate(req.requestDate)}</td>
+                              <td>
+                                <span className={getStatusClass(req.status)}>
+                                  {req.status}
+                                </span>
+                              </td>
+                              <td>
+                                <span className="notes-text">
+                                  {req.notes || '--'}
+                                </span>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </div>

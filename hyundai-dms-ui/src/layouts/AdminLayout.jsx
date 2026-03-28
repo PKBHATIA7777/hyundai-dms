@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import api from '../services/api';
+import Footer from '../components/Footer'; // ✅ Added import
 import './AdminLayout.css';
 
 const AdminLayout = ({ children }) => {
@@ -80,19 +81,12 @@ const AdminLayout = ({ children }) => {
             {!collapsed && <span className="nav-label">Customers</span>}
           </NavLink>
 
+        
 
-<NavLink to="/admin/payments" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-    <span className="nav-icon">₹</span>
-    {!collapsed && <span className="nav-label">Payments</span>}
-</NavLink>
-
-<NavLink to="/admin/audit-logs" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-    <span className="nav-icon">📋</span>
-    {!collapsed && <span className="nav-label">Audit Logs</span>}
-</NavLink>
-
-
-
+          <NavLink to="/admin/audit-logs" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+            <span className="nav-icon">📋</span>
+            {!collapsed && <span className="nav-label">Audit Logs</span>}
+          </NavLink>
         </nav>
 
         <div className="sidebar-footer">
@@ -119,6 +113,7 @@ const AdminLayout = ({ children }) => {
 
         <main className="main-content">
           {children}
+          <Footer /> {/* ✅ Added Footer here */}
         </main>
       </div>
     </div>

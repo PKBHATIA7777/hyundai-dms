@@ -8,10 +8,16 @@ import './Bookings.css';
 
 const DealerBookings = () => {
 
+    // Panel visibility state
+    const [showNewBookingPanel, setShowNewBookingPanel] = useState(false);
+
     // Bookings list
     const [bookings, setBookings] = useState([]);
     const [bookingsLoading, setBookingsLoading] = useState(true);
     const [activeFilter, setActiveFilter] = useState('ALL');
+
+    // Search for bookings
+    const [search, setSearch] = useState('');
 
     // Cars cascade
     const [cars, setCars] = useState([]);
@@ -74,7 +80,7 @@ const DealerBookings = () => {
         }
     }, [form.variantId]);
 
-    // When lead is selected — auto fill customer details
+    // When lead is selected — auto fill customer details AND car/variant from interestedVariant
     useEffect(() => {
         if (form.leadId) {
             const lead = leads.find(l => l.id === Number(form.leadId));
@@ -83,15 +89,31 @@ const DealerBookings = () => {
                 setForm(prev => ({
                     ...prev,
                     firstName: lead.customer?.firstName || '',
-                    lastName: lead.customer?.lastName || '',
-                    phone: lead.customer?.phone || '',
-                    email: lead.customer?.email || '',
+                    lastName:  lead.customer?.lastName  || '',
+                    phone:     lead.customer?.phone     || '',
+                    email:     lead.customer?.email     || '',
                 }));
+                // Auto-fill car if lead has an interested variant
+                if (lead.interestedVariant) {
+                    const variant = lead.interestedVariant;
+                    // Find the car this variant belongs to
+                    const parentCar = cars.find(c =>
+                        c.variants?.some(v => v.id === variant.id)
+                    );
+                    if (parentCar) {
+                        setSelectedCarId(String(parentCar.id));
+                        // variants will populate via the existing useEffect
+                        // Then set the variant after a tick
+                        setTimeout(() => {
+                            setForm(prev => ({ ...prev, variantId: String(variant.id) }));
+                        }, 50);
+                    }
+                }
             }
         } else {
             setSelectedLead(null);
         }
-    }, [form.leadId]);
+    }, [form.leadId, leads, cars]);
 
     const fetchBookings = async () => {
         setBookingsLoading(true);
@@ -178,6 +200,7 @@ const DealerBookings = () => {
             });
             setSelectedCarId('');
             setSelectedLead(null);
+            setShowNewBookingPanel(false);
             fetchBookings();
             fetchLeads();
         } catch (err) {
@@ -213,6 +236,17 @@ const DealerBookings = () => {
         ? bookings
         : bookings.filter(b => b.bookingStatus === activeFilter);
 
+    // Search filter for bookings
+    const displayBookings = filteredBookings.filter(b => {
+        if (!search) return true;
+        const q = search.toLowerCase();
+        return (
+            `${b.customer?.firstName} ${b.customer?.lastName}`.toLowerCase().includes(q) ||
+            b.customer?.phone?.includes(q) ||
+            b.variant?.variantName?.toLowerCase().includes(q)
+        );
+    });
+
     const countByStatus = (status) =>
         bookings.filter(b => b.bookingStatus === status).length;
 
@@ -246,6 +280,9 @@ const DealerBookings = () => {
                         <h1>Bookings</h1>
                         <p>Create and manage customer bookings. Inventory is reserved automatically.</p>
                     </div>
+                    <button className="btn-primary" onClick={() => setShowNewBookingPanel(true)}>
+                        + New Booking
+                    </button>
                 </div>
 
                 {/* Filter Bar */}
@@ -262,6 +299,16 @@ const DealerBookings = () => {
                             </span>
                         </button>
                     ))}
+                    {/* Search Input */}
+                    <div className="search-box">
+                        <input
+                            type="text"
+                            placeholder="Search bookings..."
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            className="search-input"
+                        />
+                    </div>
                 </div>
 
                 {cancelError && (
@@ -276,209 +323,10 @@ const DealerBookings = () => {
 
                 <div className="bookings-layout">
 
-                    {/* Create Booking Form */}
-                    <div className="section-card">
-                        <h3 className="section-title">New Booking</h3>
-                        <form onSubmit={handleCreateBooking} className="inline-form">
-
-                            {/* Link to Lead — optional */}
-                            <p className="form-section-label">Link to Lead (Optional)</p>
-
-                            <div className="form-group">
-                                <label>Select Interested Lead</label>
-                                <select
-                                    name="leadId"
-                                    value={form.leadId}
-                                    onChange={handleFormChange}
-                                >
-                                    <option value="">
-                                        -- Walk-in / No lead --
-                                    </option>
-                                    {leads.map(l => (
-                                        <option key={l.id} value={l.id}>
-                                            {l.customer?.firstName} {l.customer?.lastName} — {l.customer?.phone}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            {selectedLead && (
-                                <div className="lead-info-box">
-                                    <span className="lead-info-name">
-                                        {selectedLead.customer?.firstName} {selectedLead.customer?.lastName}
-                                    </span>
-                                    <span className="lead-info-sub">
-                                        {selectedLead.customer?.phone} — Lead #{selectedLead.id}
-                                    </span>
-                                </div>
-                            )}
-
-                            {/* Customer Details */}
-                            <p className="form-section-label">Customer Details</p>
-
-                            <div className="form-row">
-                                <div className="form-group">
-                                    <label>First Name {!form.leadId && '*'}</label>
-                                    <input
-                                        name="firstName"
-                                        value={form.firstName}
-                                        onChange={handleFormChange}
-                                        placeholder="Rahul"
-                                        required={!form.leadId}
-                                    />
-                                </div>
-                                <div className="form-group">
-                                    <label>Last Name {!form.leadId && '*'}</label>
-                                    <input
-                                        name="lastName"
-                                        value={form.lastName}
-                                        onChange={handleFormChange}
-                                        placeholder="Kumar"
-                                        required={!form.leadId}
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="form-group">
-                                <label>Phone *</label>
-                                <input
-                                    name="phone"
-                                    value={form.phone}
-                                    onChange={handleFormChange}
-                                    placeholder="9876543210"
-                                    required
-                                />
-                            </div>
-
-                            <div className="form-group">
-                                <label>PAN Number</label>
-                                <input
-                                    name="panNumber"
-                                    value={form.panNumber}
-                                    onChange={handleFormChange}
-                                    placeholder="ABCDE1234F"
-                                />
-                            </div>
-
-                            {/* Car Details */}
-                            <p className="form-section-label">Car Details</p>
-
-                            <div className="form-group">
-                                <label>Select Car *</label>
-                                <select
-                                    value={selectedCarId}
-                                    onChange={(e) => setSelectedCarId(e.target.value)}
-                                    required
-                                >
-                                    <option value="">-- Select a car --</option>
-                                    {cars.map(c => (
-                                        <option key={c.id} value={c.id}>
-                                            {c.modelName}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            <div className="form-group">
-                                <label>Select Variant *</label>
-                                <select
-                                    name="variantId"
-                                    value={form.variantId}
-                                    onChange={handleFormChange}
-                                    disabled={!selectedCarId}
-                                    required
-                                >
-                                    <option value="">-- Select a variant --</option>
-                                    {variants.map(v => (
-                                        <option key={v.id} value={v.id}>
-                                            {v.variantName} — ₹{Number(v.price).toLocaleString('en-IN')}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            <div className="form-group">
-                                <label>Select Colour *</label>
-                                <select
-                                    name="colourId"
-                                    value={form.colourId}
-                                    onChange={handleFormChange}
-                                    disabled={!form.variantId}
-                                    required
-                                >
-                                    <option value="">-- Select a colour --</option>
-                                    {colours.map(c => (
-                                        <option key={c.id} value={c.id}>
-                                            {c.colourName} ({c.colourCode})
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            {/* Payment Details */}
-                            <p className="form-section-label">Payment Details</p>
-
-                            <div className="form-row">
-                                <div className="form-group">
-                                    <label>Advance Amount (₹) *</label>
-                                    <input
-                                        name="advanceAmount"
-                                        type="number"
-                                        value={form.advanceAmount}
-                                        onChange={handleFormChange}
-                                        placeholder="50000"
-                                        min="1"
-                                        required
-                                    />
-                                </div>
-                                <div className="form-group">
-                                    <label>Payment Mode</label>
-                                    <select
-                                        name="paymentMode"
-                                        value={form.paymentMode}
-                                        onChange={handleFormChange}
-                                    >
-                                        <option value="">-- Select --</option>
-                                        <option value="Cash">Cash</option>
-                                        <option value="Card">Card</option>
-                                        <option value="UPI">UPI</option>
-                                        <option value="Loan">Loan</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div className="form-group">
-                                <label>Notes</label>
-                                <textarea
-                                    name="notes"
-                                    value={form.notes}
-                                    onChange={handleFormChange}
-                                    placeholder="Any special requests or delivery notes..."
-                                />
-                            </div>
-
-                            {formError && (
-                                <div className="alert alert-error">{formError}</div>
-                            )}
-                            {formSuccess && (
-                                <div className="alert alert-success">{formSuccess}</div>
-                            )}
-
-                            <button
-                                type="submit"
-                                className="btn-primary"
-                                disabled={formLoading}
-                            >
-                                {formLoading ? 'Creating...' : 'Create Booking'}
-                            </button>
-
-                        </form>
-                    </div>
-
-                    {/* Bookings List */}
+                    {/* Bookings List - shown first */}
                     <div>
                         <div className="table-header">
-                            <h3>My Bookings ({filteredBookings.length})</h3>
+                            <h3>My Bookings ({displayBookings.length})</h3>
                             <button className="btn-refresh" onClick={fetchBookings}>
                                 Refresh
                             </button>
@@ -486,16 +334,16 @@ const DealerBookings = () => {
 
                         {bookingsLoading ? (
                             <div className="loading-state">Loading bookings...</div>
-                        ) : filteredBookings.length === 0 ? (
+                        ) : displayBookings.length === 0 ? (
                             <div className="empty-state">
-                                {activeFilter === 'ALL'
-                                    ? 'No bookings yet. Create your first booking.'
-                                    : `No bookings with status ${activeFilter}.`
+                                {activeFilter === 'ALL' && !search
+                                    ? 'No bookings yet. Click "+ New Booking" to create your first booking.'
+                                    : 'No bookings match your filters.'
                                 }
                             </div>
                         ) : (
                             <div className="bookings-list">
-                                {filteredBookings.map(booking => (
+                                {displayBookings.map(booking => (
                                     <div
                                         key={booking.id}
                                         className={`booking-card status-${booking.bookingStatus}`}
@@ -605,6 +453,224 @@ const DealerBookings = () => {
                     </div>
 
                 </div>
+
+                {/* Slide-in Panel for New Booking */}
+                {showNewBookingPanel && (
+                    <div className="slide-in-overlay" onClick={() => setShowNewBookingPanel(false)}>
+                        <div className="slide-in-panel" onClick={(e) => e.stopPropagation()}>
+                            <div className="panel-header">
+                                <h3>New Booking</h3>
+                                <button className="panel-close" onClick={() => setShowNewBookingPanel(false)}>×</button>
+                            </div>
+                            <div className="panel-body">
+                                <form onSubmit={handleCreateBooking} className="inline-form">
+
+                                    {/* Link to Lead — optional */}
+                                    <p className="form-section-label">Link to Lead (Optional)</p>
+
+                                    <div className="form-group">
+                                        <label>Select Interested Lead</label>
+                                        <select
+                                            name="leadId"
+                                            value={form.leadId}
+                                            onChange={handleFormChange}
+                                        >
+                                            <option value="">
+                                                -- Walk-in / No lead --
+                                            </option>
+                                            {leads.map(l => (
+                                                <option key={l.id} value={l.id}>
+                                                    {l.customer?.firstName} {l.customer?.lastName} — {l.customer?.phone}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    {selectedLead && (
+                                        <div className="lead-info-box">
+                                            <span className="lead-info-name">
+                                                {selectedLead.customer?.firstName} {selectedLead.customer?.lastName}
+                                            </span>
+                                            <span className="lead-info-sub">
+                                                {selectedLead.customer?.phone} — Lead #{selectedLead.id}
+                                            </span>
+                                        </div>
+                                    )}
+
+                                    {/* Customer Details */}
+                                    <p className="form-section-label">Customer Details</p>
+
+                                    <div className="form-row">
+                                        <div className="form-group">
+                                            <label>First Name {!form.leadId && '*'}</label>
+                                            <input
+                                                name="firstName"
+                                                value={form.firstName}
+                                                onChange={handleFormChange}
+                                                placeholder="Rahul"
+                                                required={!form.leadId}
+                                            />
+                                        </div>
+                                        <div className="form-group">
+                                            <label>Last Name {!form.leadId && '*'}</label>
+                                            <input
+                                                name="lastName"
+                                                value={form.lastName}
+                                                onChange={handleFormChange}
+                                                placeholder="Kumar"
+                                                required={!form.leadId}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label>Phone *</label>
+                                        <input
+                                            name="phone"
+                                            value={form.phone}
+                                            onChange={handleFormChange}
+                                            placeholder="9876543210"
+                                            required
+                                        />
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label>PAN Number</label>
+                                        <input
+                                            name="panNumber"
+                                            value={form.panNumber}
+                                            onChange={handleFormChange}
+                                            placeholder="ABCDE1234F"
+                                        />
+                                    </div>
+
+                                    {/* Car Details */}
+                                    <p className="form-section-label">Car Details</p>
+
+                                    <div className="form-group">
+                                        <label>Select Car *</label>
+                                        <select
+                                            value={selectedCarId}
+                                            onChange={(e) => setSelectedCarId(e.target.value)}
+                                            required
+                                        >
+                                            <option value="">-- Select a car --</option>
+                                            {cars.map(c => (
+                                                <option key={c.id} value={c.id}>
+                                                    {c.modelName}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label>Select Variant *</label>
+                                        <select
+                                            name="variantId"
+                                            value={form.variantId}
+                                            onChange={handleFormChange}
+                                            disabled={!selectedCarId}
+                                            required
+                                        >
+                                            <option value="">-- Select a variant --</option>
+                                            {variants.map(v => (
+                                                <option key={v.id} value={v.id}>
+                                                    {v.variantName} — ₹{Number(v.price).toLocaleString('en-IN')}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label>Select Colour *</label>
+                                        <select
+                                            name="colourId"
+                                            value={form.colourId}
+                                            onChange={handleFormChange}
+                                            disabled={!form.variantId}
+                                            required
+                                        >
+                                            <option value="">-- Select a colour --</option>
+                                            {colours.map(c => (
+                                                <option key={c.id} value={c.id}>
+                                                    {c.colourName} ({c.colourCode})
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    {/* Payment Details */}
+                                    <p className="form-section-label">Payment Details</p>
+
+                                    <div className="form-row">
+                                        <div className="form-group">
+                                            <label>Advance Amount (₹) *</label>
+                                            <input
+                                                name="advanceAmount"
+                                                type="number"
+                                                value={form.advanceAmount}
+                                                onChange={handleFormChange}
+                                                placeholder="50000"
+                                                min="1"
+                                                required
+                                            />
+                                        </div>
+                                        <div className="form-group">
+                                            <label>Payment Mode</label>
+                                            <select
+                                                name="paymentMode"
+                                                value={form.paymentMode}
+                                                onChange={handleFormChange}
+                                            >
+                                                <option value="">-- Select --</option>
+                                                <option value="Cash">Cash</option>
+                                                <option value="Card">Card</option>
+                                                <option value="UPI">UPI</option>
+                                                <option value="Loan">Loan</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label>Notes</label>
+                                        <textarea
+                                            name="notes"
+                                            value={form.notes}
+                                            onChange={handleFormChange}
+                                            placeholder="Any special requests or delivery notes..."
+                                        />
+                                    </div>
+
+                                    {formError && (
+                                        <div className="alert alert-error">{formError}</div>
+                                    )}
+                                    {formSuccess && (
+                                        <div className="alert alert-success">{formSuccess}</div>
+                                    )}
+
+                                    <div className="panel-actions">
+                                        <button
+                                            type="button"
+                                            className="btn-secondary"
+                                            onClick={() => setShowNewBookingPanel(false)}
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            type="submit"
+                                            className="btn-primary"
+                                            disabled={formLoading}
+                                        >
+                                            {formLoading ? 'Creating...' : 'Create Booking'}
+                                        </button>
+                                    </div>
+
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
             </div>
         </DealerLayout>
     );

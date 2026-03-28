@@ -75,12 +75,24 @@ public class StockRequestController {
 
     // -------------------------------------------------------
     // PUT /api/admin/stock-requests/{id}/approve
-    // Returns the generated invoice
     // -------------------------------------------------------
     @PutMapping("/api/admin/stock-requests/{id}/approve")
     public ResponseEntity<?> approveRequest(@PathVariable Long id) {
         try {
             SupplyInvoice invoice = stockRequestService.approveRequest(id);
+            return ResponseEntity.ok(invoice);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    // -------------------------------------------------------
+    // PUT /api/admin/stock-requests/{id}/dispatch
+    // -------------------------------------------------------
+    @PutMapping("/api/admin/stock-requests/{id}/dispatch")
+    public ResponseEntity<?> dispatchRequest(@PathVariable Long id) {
+        try {
+            SupplyInvoice invoice = stockRequestService.dispatchRequest(id);
             return ResponseEntity.ok(invoice);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
