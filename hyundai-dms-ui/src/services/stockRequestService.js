@@ -9,4 +9,5 @@ export const getMyInvoices = () => api.get('/dealer/invoices');
 export const getAllStockRequests = () => api.get('/admin/stock-requests');
 export const approveStockRequest = (id) => api.put(`/admin/stock-requests/${id}/approve`);
 export const rejectStockRequest = (id) => api.put(`/admin/stock-requests/${id}/reject`);
+export const dispatchStockRequest = (id) => api.put(`/admin/stock-requests/${id}/dispatch`);
 export const getAllInvoices = () => api.get('/admin/invoices');

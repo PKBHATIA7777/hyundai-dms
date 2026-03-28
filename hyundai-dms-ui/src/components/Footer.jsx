@@ -5,3 +5,4 @@ const Footer = () => (
     <span>Made by Hyundai &nbsp;·&nbsp; To Hyundai &nbsp;·&nbsp; For Hyundai &nbsp; 🙏</span>
   </footer>
 );
+export default Footer;
