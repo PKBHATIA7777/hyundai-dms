@@ -17,7 +17,7 @@ public class StockRequest {
     @JoinColumn(name = "dealer_id", nullable = false)
     private Dealer dealer;
 
-    @JsonIgnoreProperties({"availableColours", "hibernateLazyInitializer", "handler"})
+   @JsonIgnoreProperties({"availableColours", "car", "hibernateLazyInitializer", "handler"})
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "variant_id", nullable = false)
     private Variant variant;

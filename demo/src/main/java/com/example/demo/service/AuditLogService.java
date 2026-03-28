@@ -24,7 +24,7 @@ public class AuditLogService {
      * Logs an action. Uses REQUIRES_NEW so the audit log is always saved
      * even if the calling transaction rolls back.
      */
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional
     public void log(String action, String details, String performedByUsername) {
         try {
             AuditLog log = new AuditLog();

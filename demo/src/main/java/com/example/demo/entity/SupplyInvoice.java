@@ -31,6 +31,7 @@ public class SupplyInvoice {
     private String status = "GENERATED";
 
     @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL)
+    @JsonIgnoreProperties({"invoice", "hibernateLazyInitializer", "handler"})
     private List<SupplyInvoiceItem> items;
 
     public Long getId() { return id; }
