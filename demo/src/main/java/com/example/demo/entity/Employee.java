@@ -27,14 +27,14 @@ public class Employee {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "dealer_id", nullable = false)
-    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    // ✅ FIXED: ignore all proxy-related fields to prevent serialization crash
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "users"})
     private Dealer dealer;
 
     @Column(nullable = false)
     private String status = "ACTIVE";
 
     // Getters and Setters
-
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 

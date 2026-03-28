@@ -17,12 +17,12 @@ public class Lead {
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Customer customer;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)   // ✅ FIXED: change to EAGER
     @JoinColumn(name = "variant_id")
     @JsonIgnoreProperties({"availableColours", "car", "hibernateLazyInitializer", "handler"})
     private Variant interestedVariant;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)   // ✅ FIXED: change to EAGER
     @JoinColumn(name = "dealer_id")
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Dealer dealer;
@@ -38,6 +38,7 @@ public class Lead {
     @Column(columnDefinition = "TEXT")
     private String notes;
 
+    // --- all existing getters and setters unchanged ---
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
