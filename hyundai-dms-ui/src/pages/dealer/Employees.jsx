@@ -18,31 +18,26 @@ const DealerEmployees = () => {
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading]     = useState(true);
 
-  // Add form modal
   const [showAddForm, setShowAddForm] = useState(false);
   const [form, setForm]           = useState(EMPTY_FORM);
   const [formError, setFormError] = useState('');
   const [formSuccess, setFormSuccess] = useState('');
   const [formLoading, setFormLoading] = useState(false);
 
-  // Edit modal
   const [editEmployee, setEditEmployee] = useState(null);
   const [editForm, setEditForm]         = useState(EMPTY_FORM);
   const [editError, setEditError]       = useState('');
   const [editLoading, setEditLoading]   = useState(false);
 
-  // Search and filter
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
-
-  // Action loading per row
   const [actionLoading, setActionLoading] = useState(null);
 
   const fetchEmployees = useCallback(async () => {
     setLoading(true);
     try {
       const res = await getMyEmployees();
-      const data = res.data.data || res.data;
+      const data = res.data?.data ?? res.data;
       setEmployees(Array.isArray(data) ? data : []);
     } catch {
       setEmployees([]);
@@ -55,7 +50,6 @@ const DealerEmployees = () => {
     fetchEmployees();
   }, [fetchEmployees]);
 
-  // Filtered employees
   const filtered = employees.filter(e => {
     const q = search.toLowerCase();
     const matchSearch = !q ||
@@ -66,7 +60,6 @@ const DealerEmployees = () => {
     return matchSearch && matchStatus;
   });
 
-  // ── Add Employee ──
   const handleFormChange = (e) => {
     setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
     setFormError('');
@@ -108,7 +101,6 @@ const DealerEmployees = () => {
     setFormSuccess('');
   };
 
-  // ── Toggle Status ──
   const handleToggleStatus = async (employee) => {
     setActionLoading(employee.id);
     try {
@@ -129,7 +121,6 @@ const DealerEmployees = () => {
     }
   };
 
-  // ── Edit Modal ──
   const openEdit = (employee) => {
     setEditEmployee(employee);
     setEditForm({
@@ -173,7 +164,6 @@ const DealerEmployees = () => {
     }
   };
 
-  // ── Counts ──
   const activeCount   = employees.filter(e => e.status === 'ACTIVE').length;
   const inactiveCount = employees.filter(e => e.status === 'INACTIVE').length;
 
@@ -184,7 +174,6 @@ const DealerEmployees = () => {
     <DealerLayout>
       <div className="employees-page">
 
-        {/* Header */}
         <div className="page-header">
           <div>
             <h1>Employees</h1>
@@ -195,7 +184,6 @@ const DealerEmployees = () => {
           </button>
         </div>
 
-        {/* Stats Row */}
         <div className="stats-row">
           <div className="stat-pill">
             <span className="stat-pill-label">Total Employees</span>
@@ -203,37 +191,29 @@ const DealerEmployees = () => {
           </div>
           <div className="stat-pill" style={{ borderLeftColor: 'var(--success)' }}>
             <span className="stat-pill-label">Active</span>
-            <span className="stat-pill-value" style={{ color: 'var(--success)' }}>
-              {activeCount}
-            </span>
+            <span className="stat-pill-value" style={{ color: 'var(--success)' }}>{activeCount}</span>
           </div>
           <div className="stat-pill" style={{ borderLeftColor: 'var(--error)' }}>
             <span className="stat-pill-label">Inactive</span>
-            <span className="stat-pill-value" style={{ color: 'var(--error)' }}>
-              {inactiveCount}
-            </span>
+            <span className="stat-pill-value" style={{ color: 'var(--error)' }}>{inactiveCount}</span>
           </div>
         </div>
 
-        {/* Employees Table */}
         <div className="table-wrapper">
-          {/* Search and Filter */}
           <div className="table-header">
             <h3>My Team ({filtered.length})</h3>
-            <div className="table-controls">
+            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
               <input
                 type="text"
                 placeholder="Search by name, phone, designation..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="search-input"
-                autoComplete="off"
               />
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
                 className="filter-select"
-                autoComplete="off"
               >
                 <option value="">All Status</option>
                 <option value="ACTIVE">Active</option>
@@ -249,8 +229,8 @@ const DealerEmployees = () => {
             <div className="loading-state">Loading employees...</div>
           ) : filtered.length === 0 ? (
             <div className="empty-state">
-              {employees.length === 0 
-                ? 'No employees added yet. Click "+ Add Employee" to get started.' 
+              {employees.length === 0
+                ? 'No employees added yet. Click "+ Add Employee" to get started.'
                 : 'No employees match your search criteria.'}
             </div>
           ) : (
@@ -329,8 +309,11 @@ const DealerEmployees = () => {
 
         {/* Add Employee Modal */}
         {showAddForm && (
-          <div className="modal-overlay" onClick={closeAddModal}>
-            <div className="modal" onClick={e => e.stopPropagation()}>
+          <div
+            className="modal-overlay"
+            onMouseDown={(e) => { if (e.target === e.currentTarget) closeAddModal(); }}
+          >
+            <div className="modal" onMouseDown={(e) => e.stopPropagation()}>
               <div className="modal-header">
                 <h3>Add New Employee</h3>
                 <button className="modal-close" onClick={closeAddModal}>✕</button>
@@ -345,7 +328,6 @@ const DealerEmployees = () => {
                       onChange={handleFormChange}
                       placeholder="Ravi"
                       required
-                      autoComplete="off"
                     />
                   </div>
                   <div className="form-group">
@@ -356,7 +338,6 @@ const DealerEmployees = () => {
                       onChange={handleFormChange}
                       placeholder="Kumar"
                       required
-                      autoComplete="off"
                     />
                   </div>
                 </div>
@@ -368,7 +349,6 @@ const DealerEmployees = () => {
                     onChange={handleFormChange}
                     placeholder="9876543210"
                     required
-                    autoComplete="off"
                   />
                 </div>
                 <div className="form-group">
@@ -379,16 +359,14 @@ const DealerEmployees = () => {
                     value={form.email}
                     onChange={handleFormChange}
                     placeholder="ravi@dealer.com"
-                    autoComplete="new-password"
                   />
                 </div>
                 <div className="form-group">
                   <label>Designation</label>
-                  <select 
-                    name="designation" 
-                    value={form.designation} 
+                  <select
+                    name="designation"
+                    value={form.designation}
                     onChange={handleFormChange}
-                    autoComplete="off"
                   >
                     <option value="">-- Select designation --</option>
                     <option value="Sales Executive">Sales Executive</option>
@@ -403,11 +381,7 @@ const DealerEmployees = () => {
                 {formError   && <div className="alert alert-error">{formError}</div>}
                 {formSuccess && <div className="alert alert-success">{formSuccess}</div>}
                 <div className="modal-actions">
-                  <button
-                    type="button"
-                    className="btn-secondary-outline"
-                    onClick={closeAddModal}
-                  >
+                  <button type="button" className="btn-secondary-outline" onClick={closeAddModal}>
                     Cancel
                   </button>
                   <button type="submit" className="btn-primary" disabled={formLoading}>
@@ -421,8 +395,11 @@ const DealerEmployees = () => {
 
         {/* Edit Modal */}
         {editEmployee && (
-          <div className="modal-overlay" onClick={() => setEditEmployee(null)}>
-            <div className="modal" onClick={e => e.stopPropagation()}>
+          <div
+            className="modal-overlay"
+            onMouseDown={(e) => { if (e.target === e.currentTarget) setEditEmployee(null); }}
+          >
+            <div className="modal" onMouseDown={(e) => e.stopPropagation()}>
               <div className="modal-header">
                 <h3>Edit Employee</h3>
                 <button className="modal-close" onClick={() => setEditEmployee(null)}>✕</button>
@@ -436,7 +413,6 @@ const DealerEmployees = () => {
                       value={editForm.firstName}
                       onChange={handleEditChange}
                       required
-                      autoComplete="off"
                     />
                   </div>
                   <div className="form-group">
@@ -446,7 +422,6 @@ const DealerEmployees = () => {
                       value={editForm.lastName}
                       onChange={handleEditChange}
                       required
-                      autoComplete="off"
                     />
                   </div>
                 </div>
@@ -457,7 +432,6 @@ const DealerEmployees = () => {
                     value={editForm.phone}
                     onChange={handleEditChange}
                     required
-                    autoComplete="off"
                   />
                 </div>
                 <div className="form-group">
@@ -467,7 +441,6 @@ const DealerEmployees = () => {
                     type="email"
                     value={editForm.email}
                     onChange={handleEditChange}
-                    autoComplete="new-password"
                   />
                 </div>
                 <div className="form-group">
@@ -476,7 +449,6 @@ const DealerEmployees = () => {
                     name="designation"
                     value={editForm.designation}
                     onChange={handleEditChange}
-                    autoComplete="off"
                   >
                     <option value="">-- Select designation --</option>
                     <option value="Sales Executive">Sales Executive</option>
@@ -490,11 +462,7 @@ const DealerEmployees = () => {
                 </div>
                 {editError && <div className="alert alert-error">{editError}</div>}
                 <div className="modal-actions">
-                  <button
-                    type="button"
-                    className="btn-secondary-outline"
-                    onClick={() => setEditEmployee(null)}
-                  >
+                  <button type="button" className="btn-secondary-outline" onClick={() => setEditEmployee(null)}>
                     Cancel
                   </button>
                   <button type="submit" className="btn-primary" disabled={editLoading}>

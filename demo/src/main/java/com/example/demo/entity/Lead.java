@@ -27,14 +27,12 @@ public class Lead {
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Dealer dealer;
 
-    // NEW / CONTACTED / INTERESTED / BOOKED / LOST
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "VARCHAR(255) DEFAULT 'NEW'")
     private String status = "NEW";
 
-    // Walk-in / Phone / Online / Referral
     private String source;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "DATETIME(6) DEFAULT CURRENT_TIMESTAMP(6)")
     private LocalDateTime createdAt = LocalDateTime.now();
 
     @Column(columnDefinition = "TEXT")

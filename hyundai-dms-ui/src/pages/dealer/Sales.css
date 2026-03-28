@@ -488,3 +488,125 @@
     grid-template-columns: 1fr 1fr;
   }
 }
+
+
+
+
+
+
+
+
+
+.slide-in-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 300;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.slide-in-panel {
+  width: 460px;
+  max-width: 95vw;
+  background: var(--white);
+  height: 100%;
+  overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  animation: slideFromRight 0.25s ease;
+}
+
+@keyframes slideFromRight {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--grey-mid);
+  position: sticky;
+  top: 0;
+  background: var(--white);
+  z-index: 1;
+}
+
+.panel-header h3 {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
+.panel-close {
+  background: none;
+  border: none;
+  font-size: 22px;
+  color: var(--grey-text);
+  cursor: pointer;
+  line-height: 1;
+  padding: 0 4px;
+  transition: var(--transition);
+}
+
+.panel-close:hover {
+  color: var(--error);
+}
+
+.panel-body {
+  flex: 1;
+  padding: 24px;
+  overflow-y: auto;
+}
+
+.panel-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 24px;
+  border-top: 1px solid var(--grey-mid);
+  background: var(--white);
+  position: sticky;
+  bottom: 0;
+}
+
+.btn-secondary {
+  padding: 10px 20px;
+  background: transparent;
+  border: 1.5px solid var(--grey-mid);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-mid);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.btn-secondary:hover {
+  border-color: var(--purple-main);
+  color: var(--purple-main);
+}
+
+.search-box {
+  margin-left: auto;
+}
+
+.search-input {
+  padding: 8px 14px;
+  border: 1.5px solid var(--grey-mid);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  color: var(--text-dark);
+  background: var(--grey-light);
+  min-width: 200px;
+  transition: var(--transition);
+}
+
+.search-input:focus {
+  border-color: var(--purple-main);
+  background: var(--white);
+  outline: none;
+}

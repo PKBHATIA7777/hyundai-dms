@@ -255,3 +255,92 @@
     font-size: 13px;
   }
 }
+
+
+
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid var(--grey-mid);
+  margin-bottom: 4px;
+}
+
+.tab {
+  padding: 10px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--grey-text);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.tab:hover { color: var(--purple-main); }
+
+.tab.active {
+  color: var(--purple-main);
+  border-bottom-color: var(--purple-main);
+}
+
+/* Dealer Accordion */
+.dealer-accordion {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dealer-accordion-item {
+  background: var(--white);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  border: 1px solid var(--grey-mid);
+}
+
+.dealer-accordion-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 20px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-dark);
+  background: var(--white);
+  border: none;
+  width: 100%;
+  text-align: left;
+  transition: var(--transition);
+}
+
+.dealer-accordion-header:hover {
+  background: var(--purple-soft);
+}
+
+.dealer-accordion-name {
+  flex: 1;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.dealer-accordion-arrow {
+  font-size: 16px;
+  color: var(--purple-main);
+  transition: transform 0.2s;
+  margin-left: auto;
+}
+
+/* Badge for neutral count */
+.badge-neutral {
+  background: var(--grey-mid);
+  color: var(--text-mid);
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+}
