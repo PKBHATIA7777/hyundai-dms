@@ -26,6 +26,10 @@ const AdminStockRequests = () => {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
 
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
+
   useEffect(() => {
     fetchRequests();
   }, []);
@@ -35,6 +39,11 @@ const AdminStockRequests = () => {
       fetchInvoices();
     }
   }, [activeTab]);
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, statusFilter]);
 
   const fetchRequests = async () => {
     setRequestsLoading(true);
@@ -183,6 +192,13 @@ const AdminStockRequests = () => {
     return matchSearch && matchStatus;
   });
 
+  // Pagination logic
+  const totalPages = Math.ceil(filteredRequests.length / ITEMS_PER_PAGE);
+  const paginatedRequests = filteredRequests.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
   const pendingCount = requests.filter(r => r.status === 'PENDING').length;
 
   return (
@@ -266,7 +282,7 @@ const AdminStockRequests = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredRequests.map(req => (
+                  {paginatedRequests.map(req => (
                     <tr key={req.id}>
                       <td>{req.dealer?.name}</td>
                       <td>{req.variant?.car?.modelName || '--'}</td>
@@ -325,6 +341,91 @@ const AdminStockRequests = () => {
                   ))}
                 </tbody>
               </table>
+            )}
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '14px 20px',
+                borderTop: '1px solid var(--grey-mid)',
+                fontSize: '13px',
+                color: 'var(--grey-text)'
+              }}>
+                <span>
+                  Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1}–{Math.min(currentPage * ITEMS_PER_PAGE, filteredRequests.length)} of {filteredRequests.length} requests
+                </span>
+                <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                  <button
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    style={{
+                      padding: '6px 12px',
+                      borderRadius: 'var(--radius-sm)',
+                      border: '1.5px solid var(--grey-mid)',
+                      background: currentPage === 1 ? 'var(--grey-light)' : 'var(--white)',
+                      color: currentPage === 1 ? 'var(--grey-text)' : 'var(--purple-main)',
+                      cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+                      fontWeight: 600,
+                      fontSize: '13px'
+                    }}
+                  >
+                    ← Prev
+                  </button>
+                  {Array.from({ length: totalPages }, (_, i) => i + 1)
+                    .filter(page => page === 1 || page === totalPages || Math.abs(page - currentPage) <= 1)
+                    .reduce((acc, page, idx, arr) => {
+                      if (idx > 0 && arr[idx - 1] !== page - 1) {
+                        acc.push('...');
+                      }
+                      acc.push(page);
+                      return acc;
+                    }, [])
+                    .map((item, idx) =>
+                      item === '...' ? (
+                        <span key={`ellipsis-${idx}`} style={{ padding: '0 4px', color: 'var(--grey-text)' }}>…</span>
+                      ) : (
+                        <button
+                          key={item}
+                          onClick={() => setCurrentPage(item)}
+                          style={{
+                            padding: '6px 11px',
+                            borderRadius: 'var(--radius-sm)',
+                            border: '1.5px solid',
+                            borderColor: currentPage === item ? 'var(--purple-main)' : 'var(--grey-mid)',
+                            background: currentPage === item ? 'var(--purple-main)' : 'var(--white)',
+                            color: currentPage === item ? 'var(--white)' : 'var(--text-dark)',
+                            cursor: 'pointer',
+                            fontWeight: 600,
+                            fontSize: '13px',
+                            minWidth: '34px'
+                          }}
+                        >
+                          {item}
+                        </button>
+                      )
+                    )
+                  }
+                  <button
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    disabled={currentPage === totalPages}
+                    style={{
+                      padding: '6px 12px',
+                      borderRadius: 'var(--radius-sm)',
+                      border: '1.5px solid var(--grey-mid)',
+                      background: currentPage === totalPages ? 'var(--grey-light)' : 'var(--white)',
+                      color: currentPage === totalPages ? 'var(--grey-text)' : 'var(--purple-main)',
+                      cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
+                      fontWeight: 600,
+                      fontSize: '13px'
+                    }}
+                  >
+                    Next →
+                  </button>
+                </div>
+              </div>
             )}
           </div>
         )}

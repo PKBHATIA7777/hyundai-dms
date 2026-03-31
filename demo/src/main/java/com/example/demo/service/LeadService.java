@@ -25,15 +25,12 @@ public class LeadService {
     @Autowired
     private VariantRepository variantRepository;
 
-    // -------------------------------------------------------
-    // DEALER: Create a new lead
-    // Logic: if customer with this phone exists — reuse them
-    //        if not — create new customer
-    // -------------------------------------------------------
+    @Autowired
+    private DealerRepository dealerRepository;
+
     @Transactional
     public Lead createLead(String username, LeadDto dto) {
 
-        // Step 1: Get dealer from logged in user
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found."));
 
@@ -43,12 +40,10 @@ public class LeadService {
 
         Dealer dealer = user.getDealer();
 
-        // Step 2: Find or create customer by phone
         Customer customer = customerRepository.findByPhone(dto.getPhone())
                 .orElse(null);
 
         if (customer == null) {
-            // New customer — create them
             if (dto.getFirstName() == null || dto.getFirstName().isBlank()) {
                 throw new RuntimeException("First name is required for new customer.");
             }
@@ -65,7 +60,6 @@ public class LeadService {
             customer = customerRepository.save(customer);
         }
 
-        // Step 3: Check if lead already exists for this customer at this dealer
         boolean leadExists = leadRepository.existsByCustomerIdAndDealerId(
                 customer.getId(), dealer.getId()
         );
@@ -76,14 +70,12 @@ public class LeadService {
             );
         }
 
-        // Step 4: Find variant if provided
         Variant variant = null;
         if (dto.getVariantId() != null) {
             variant = variantRepository.findById(dto.getVariantId())
                     .orElseThrow(() -> new RuntimeException("Variant not found."));
         }
 
-        // Step 5: Create the lead
         Lead lead = new Lead();
         lead.setCustomer(customer);
         lead.setDealer(dealer);
@@ -95,9 +87,6 @@ public class LeadService {
         return leadRepository.save(lead);
     }
 
-    // -------------------------------------------------------
-    // DEALER: Get all their leads
-    // -------------------------------------------------------
     public List<Lead> getMyLeads(String username) {
 
         User user = userRepository.findByUsername(username)
@@ -112,15 +101,10 @@ public class LeadService {
         );
     }
 
-    // -------------------------------------------------------
-    // DEALER: Update lead status
-    // Valid transitions:
-    // NEW -> CONTACTED -> INTERESTED -> BOOKED / LOST
-    // -------------------------------------------------------
     @Transactional
-    public Lead updateLeadStatus(String username, Long leadId, String newStatus) {
+    public void updateLeadStatus(String username, Long leadId, String newStatus) {
 
-        // Step 1: Validate new status
+        // Step 1: Validate status value first
         List<String> validStatuses = List.of(
                 AppConstants.LEAD_NEW,
                 AppConstants.LEAD_CONTACTED,
@@ -133,7 +117,7 @@ public class LeadService {
             throw new RuntimeException("Invalid status: " + newStatus);
         }
 
-        // Step 2: Get dealer from logged in user
+        // Step 2: Get dealer ID from username safely
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found."));
 
@@ -141,32 +125,36 @@ public class LeadService {
             throw new RuntimeException("No dealer account linked to this user.");
         }
 
-        // Step 3: Find the lead
-        Lead lead = leadRepository.findById(leadId)
-                .orElseThrow(() -> new RuntimeException("Lead not found."));
+        Long dealerId = user.getDealer().getId();
 
-        // Step 4: Make sure this lead belongs to this dealer
-        if (!lead.getDealer().getId().equals(user.getDealer().getId())) {
+        // Step 3: Find lead
+        Lead lead = leadRepository.findById(leadId)
+                .orElseThrow(() -> new RuntimeException("Lead not found with id: " + leadId));
+
+        // Step 4: Check dealer owns this lead
+        if (lead.getDealer() == null) {
+            throw new RuntimeException("Lead has no dealer assigned.");
+        }
+
+        if (!lead.getDealer().getId().equals(dealerId)) {
             throw new RuntimeException("You do not have access to this lead.");
         }
 
-        // Step 5: Cannot change status of a BOOKED or LOST lead
-        if (lead.getStatus().equals(AppConstants.LEAD_BOOKED)) {
+        // Step 5: Check current status allows transition
+        String currentStatus = lead.getStatus();
+
+        if (AppConstants.LEAD_BOOKED.equals(currentStatus)) {
             throw new RuntimeException("Cannot change status of a booked lead.");
         }
 
-        if (lead.getStatus().equals(AppConstants.LEAD_LOST)) {
+        if (AppConstants.LEAD_LOST.equals(currentStatus)) {
             throw new RuntimeException("Cannot reopen a lost lead.");
         }
 
-        // Step 6: Update status
-        lead.setStatus(newStatus);
-        return leadRepository.save(lead);
+        // Step 6: Update using JPQL to avoid any entity serialization issue
+        leadRepository.updateLeadStatus(leadId, newStatus);
     }
 
-    // -------------------------------------------------------
-    // DEALER: Get leads filtered by status
-    // -------------------------------------------------------
     public List<Lead> getMyLeadsByStatus(String username, String status) {
 
         User user = userRepository.findByUsername(username)

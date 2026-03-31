@@ -9,6 +9,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -19,10 +20,6 @@ public class LeadController {
     @Autowired
     private LeadService leadService;
 
-    // -------------------------------------------------------
-    // POST /api/dealer/leads
-    // Create a new lead (creates customer if not exists)
-    // -------------------------------------------------------
     @PostMapping("/leads")
     public ResponseEntity<?> createLead(@RequestBody LeadDto dto) {
         try {
@@ -34,35 +31,23 @@ public class LeadController {
         }
     }
 
-    // -------------------------------------------------------
-    // GET /api/dealer/leads
-    // Get all leads for this dealer
-    // Optional query param: ?status=NEW
-    // -------------------------------------------------------
     @GetMapping("/leads")
     public ResponseEntity<?> getMyLeads(
             @RequestParam(required = false) String status) {
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-
             List<Lead> leads;
             if (status != null && !status.isBlank()) {
                 leads = leadService.getMyLeadsByStatus(auth.getName(), status);
             } else {
                 leads = leadService.getMyLeads(auth.getName());
             }
-
             return ResponseEntity.ok(leads);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
-    // -------------------------------------------------------
-    // PUT /api/dealer/leads/{id}/status
-    // Update lead status
-    // Body: { "status": "CONTACTED" }
-    // -------------------------------------------------------
     @PutMapping("/leads/{id}/status")
     public ResponseEntity<?> updateLeadStatus(
             @PathVariable Long id,
@@ -75,10 +60,22 @@ public class LeadController {
                 return ResponseEntity.badRequest().body("Status is required.");
             }
 
-            Lead lead = leadService.updateLeadStatus(auth.getName(), id, newStatus);
-            return ResponseEntity.ok(lead);
+            // Service returns void — no entity serialization possible
+            leadService.updateLeadStatus(auth.getName(), id, newStatus);
+
+            // Return plain map — completely safe, no JPA entities involved
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("leadId", id);
+            response.put("newStatus", newStatus);
+            return ResponseEntity.ok(response);
+
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            e.printStackTrace();
+            Map<String, Object> error = new HashMap<>();
+            error.put("success", false);
+            error.put("error", e.getMessage());
+            return ResponseEntity.status(500).body(error);
         }
     }
 }

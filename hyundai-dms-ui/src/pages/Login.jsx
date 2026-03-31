@@ -22,7 +22,7 @@ const Login = () => {
         navigate('/dealer/dashboard', { replace: true });
       }
     }
-  }, [navigate]);
+  }, [navigate]); 
 
   const handleChange = (e) => {
     setCredentials({ ...credentials, [e.target.name]: e.target.value });

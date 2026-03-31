@@ -27,7 +27,8 @@ public class Variant {
     @JoinColumn(name = "car_id", nullable = false)
     private Car car;
 
-    @ManyToMany
+    // ✅ FIX: Added fetch = FetchType.EAGER
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
         name = "variant_colours",
         joinColumns = @JoinColumn(name = "variant_id"),
