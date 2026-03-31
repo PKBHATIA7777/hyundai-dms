@@ -363,7 +363,7 @@ const DealerBookings = () => {
                                                 </span>
                                                 {booking.lead && (
                                                     <span className="lead-tag">
-                                                        🔗 Lead #{booking.lead.id}
+                                                        
                                                     </span>
                                                 )}
                                                 {booking.bookingStatus === 'CONFIRMED' && (
@@ -492,7 +492,7 @@ const DealerBookings = () => {
                                                 {selectedLead.customer?.firstName} {selectedLead.customer?.lastName}
                                             </span>
                                             <span className="lead-info-sub">
-                                                {selectedLead.customer?.phone} — Lead #{selectedLead.id}
+                                                {selectedLead.customer?.phone} {selectedLead.id}
                                             </span>
                                         </div>
                                     )}

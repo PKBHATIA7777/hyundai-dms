@@ -5,58 +5,51 @@ import {
   approveStockRequest,
   rejectStockRequest,
   getAllInvoices,
-  dispatchStockRequest // ⚠️ Add this export to stockRequestService
+  dispatchStockRequest,
 } from '../../services/stockRequestService';
-import './StockRequests.css';
+import DataTable from '../../components/DataTable';
+
+const formatDate = (dateStr) => {
+  if (!dateStr) return '--';
+  return new Date(dateStr).toLocaleDateString('en-IN', {
+    day: '2-digit', month: 'short', year: 'numeric',
+  });
+};
+
+const STATUS_STYLES = {
+  PENDING:    { background: '#FFF8E1', color: '#E65100' },
+  APPROVED:   { background: '#E8F5E9', color: '#166534' },
+  REJECTED:   { background: '#FEE2E2', color: '#991B1B' },
+  DISPATCHED: { background: '#E3F2FD', color: '#1565C0' },
+};
 
 const AdminStockRequests = () => {
   const [activeTab, setActiveTab] = useState('requests');
 
-  // Requests
   const [requests, setRequests] = useState([]);
   const [requestsLoading, setRequestsLoading] = useState(true);
   const [actionError, setActionError] = useState('');
   const [actionLoading, setActionLoading] = useState(null);
 
-  // Invoices
   const [invoices, setInvoices] = useState([]);
   const [invoicesLoading, setInvoicesLoading] = useState(false);
-
-  // Search & Filter
-  const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
-
-  // Pagination
-  const [currentPage, setCurrentPage] = useState(1);
-  const ITEMS_PER_PAGE = 10;
 
   useEffect(() => {
     fetchRequests();
   }, []);
 
   useEffect(() => {
-    if (activeTab === 'invoices') {
-      fetchInvoices();
-    }
+    if (activeTab === 'invoices') fetchInvoices();
   }, [activeTab]);
-
-  // Reset page when filters change
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [search, statusFilter]);
 
   const fetchRequests = async () => {
     setRequestsLoading(true);
     setActionError('');
     try {
       const res = await getAllStockRequests();
-      if (Array.isArray(res.data)) {
-        setRequests(res.data);
-      }
+      if (Array.isArray(res.data)) setRequests(res.data);
     } catch (err) {
-      setActionError(
-        err.response?.data || 'Failed to refresh requests. Please try again.'
-      );
+      setActionError(err.response?.data || 'Failed to load requests.');
     } finally {
       setRequestsLoading(false);
     }
@@ -64,26 +57,21 @@ const AdminStockRequests = () => {
 
   const fetchInvoices = async () => {
     setInvoicesLoading(true);
-    setActionError('');
     try {
       const res = await getAllInvoices();
-      if (Array.isArray(res.data)) {
-        setInvoices(res.data);
-      }
+      if (Array.isArray(res.data)) setInvoices(res.data);
     } catch (err) {
-      setActionError(
-        err.response?.data || 'Failed to refresh invoices. Please try again.'
-      );
+      setActionError(err.response?.data || 'Failed to load invoices.');
     } finally {
       setInvoicesLoading(false);
     }
   };
 
-  const handleApprove = async (id) => {
+  const handleApprove = async (row) => {
     setActionError('');
-    setActionLoading(id);
+    setActionLoading(row.id);
     try {
-      await approveStockRequest(id);
+      await approveStockRequest(row.id);
       fetchRequests();
     } catch (err) {
       setActionError(err.response?.data || 'Failed to approve request.');
@@ -92,11 +80,11 @@ const AdminStockRequests = () => {
     }
   };
 
-  const handleReject = async (id) => {
+  const handleReject = async (row) => {
     setActionError('');
-    setActionLoading(id);
+    setActionLoading(row.id);
     try {
-      await rejectStockRequest(id);
+      await rejectStockRequest(row.id);
       fetchRequests();
     } catch (err) {
       setActionError(err.response?.data || 'Failed to reject request.');
@@ -105,14 +93,11 @@ const AdminStockRequests = () => {
     }
   };
 
-  const handleDispatch = async (id) => {
-    setActionLoading(id);
+  const handleDispatch = async (row) => {
+    setActionLoading(row.id);
     try {
-      // ⚠️ Ensure dispatchStockRequest is added to stockRequestService
-      // or replace with direct api.put call if using axios instance
-      const res = await dispatchStockRequest(id);
-      const invoice = res.data;
-      printAdminInvoice(invoice);
+      const res = await dispatchStockRequest(row.id);
+      printAdminInvoice(res.data);
       fetchRequests();
     } catch (err) {
       setActionError(err.response?.data || 'Dispatch failed.');
@@ -121,17 +106,13 @@ const AdminStockRequests = () => {
     }
   };
 
-  const handleViewInvoice = async (reqId) => {
+  const handleViewInvoice = async (row) => {
     try {
-      // Fetch invoice associated with this request
       const res = await getAllInvoices();
-      const invoice = res.data?.find(inv => inv.stockRequest?.id === reqId);
-      if (invoice) {
-        printAdminInvoice(invoice);
-      } else {
-        setActionError('Invoice not found for this request.');
-      }
-    } catch (err) {
+      const invoice = res.data?.find((inv) => inv.stockRequest?.id === row.id);
+      if (invoice) printAdminInvoice(invoice);
+      else setActionError('Invoice not found for this request.');
+    } catch {
       setActionError('Failed to fetch invoice.');
     }
   };
@@ -153,10 +134,10 @@ const AdminStockRequests = () => {
       <div><div class="label">Invoice Number</div><div class="val">${invoice.invoiceNumber}</div></div>
       <div><div class="label">Invoice Date</div><div class="val">${new Date(invoice.invoiceDate).toLocaleDateString('en-IN', { dateStyle: 'long' })}</div></div>
       <div><div class="label">Dealer</div><div class="val">${invoice.dealer?.name} (${invoice.dealer?.dealerCode})</div></div>
-      <div><div class="label">Status</div><div class="val">DISPATCHED</div></div>
-      <div><div class="label">Variant</div><div class="val">${req?.variant?.variantName}</div></div>
+      <div><div class="label">Status</div><div class="val">${invoice.status}</div></div>
+      <div><div class="label">Variant</div><div class="val">${req?.variant?.variantName || '--'}</div></div>
       <div><div class="label">Colour</div><div class="val">${req?.colour?.colourName} — ${req?.colour?.colourCode}</div></div>
-      <div><div class="label">Quantity Dispatched</div><div class="val">${req?.requestedQuantity} units</div></div>
+      <div><div class="label">Quantity</div><div class="val">${req?.requestedQuantity} units</div></div>
     </div>
     <div class="footer">This is a system-generated document. Hyundai Dealer Management System.</div>
     </body></html>`;
@@ -166,324 +147,243 @@ const AdminStockRequests = () => {
     setTimeout(() => w.print(), 400);
   };
 
-  const getStatusClass = (status) => {
-    if (status === 'PENDING') return 'status-badge status-pending';
-    if (status === 'APPROVED') return 'status-badge status-approved';
-    if (status === 'REJECTED') return 'status-badge status-rejected';
-    if (status === 'DISPATCHED') return 'status-badge status-dispatched';
-    return 'status-badge';
-  };
+  const pendingCount = requests.filter((r) => r.status === 'PENDING').length;
 
-  const formatDate = (dateStr) => {
-    if (!dateStr) return '--';
-    return new Date(dateStr).toLocaleDateString('en-IN', {
-      day: '2-digit', month: 'short', year: 'numeric'
-    });
-  };
+  // ── Requests table columns ──
+  const requestColumns = [
+    {
+      key: 'dealerName',
+      header: 'Dealer',
+      sortable: true,
+      render: (_, row) => row.dealer?.name || '--',
+    },
+    {
+      key: 'carName',
+      header: 'Car',
+      sortable: true,
+      render: (_, row) => row.variant?.car?.modelName || '--',
+    },
+    {
+      key: 'variantName',
+      header: 'Variant',
+      sortable: true,
+      render: (_, row) => row.variant?.variantName || '--',
+    },
+    {
+      key: 'colourName',
+      header: 'Colour',
+      render: (_, row) => row.colour?.colourName || '--',
+    },
+    {
+      key: 'requestedQuantity',
+      header: 'Qty',
+      sortable: true,
+      align: 'center',
+      width: '70px',
+    },
+    {
+      key: 'requestDate',
+      header: 'Date',
+      sortable: true,
+      render: (val) => formatDate(val),
+    },
+    {
+      key: 'status',
+      header: 'Status',
+      sortable: true,
+      align: 'center',
+      render: (val) => {
+        const style = STATUS_STYLES[val] || { background: '#F5F5F5', color: '#757575' };
+        return (
+          <span style={{ ...style, padding: '4px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: 700 }}>
+            {val}
+          </span>
+        );
+      },
+    },
+    {
+      key: 'notes',
+      header: 'Notes',
+      render: (val) => (
+        <span style={{ fontSize: '12px', color: 'var(--grey-text)', fontStyle: 'italic', maxWidth: '180px', display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          {val || '--'}
+        </span>
+      ),
+    },
+  ];
 
-  // Filter logic
-  const filteredRequests = requests.filter(r => {
-    const q = search.toLowerCase();
-    const matchSearch = !q ||
-      r.dealer?.name?.toLowerCase().includes(q) ||
-      r.variant?.variantName?.toLowerCase().includes(q) ||
-      r.colour?.colourName?.toLowerCase().includes(q);
-    const matchStatus = !statusFilter || r.status === statusFilter;
-    return matchSearch && matchStatus;
-  });
+  // ── Requests filters ──
+  const requestFilters = [
+    {
+      key: 'status',
+      label: 'Status',
+      type: 'select',
+      options: [
+        { label: 'Pending', value: 'PENDING' },
+        { label: 'Approved', value: 'APPROVED' },
+        { label: 'Rejected', value: 'REJECTED' },
+        { label: 'Dispatched', value: 'DISPATCHED' },
+      ],
+    },
+  ];
 
-  // Pagination logic
-  const totalPages = Math.ceil(filteredRequests.length / ITEMS_PER_PAGE);
-  const paginatedRequests = filteredRequests.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
-  );
+  // ── Row actions — logic:
+  //   Approve + Reject → only PENDING
+  //   Dispatch        → only APPROVED
+  //   View Invoice    → only DISPATCHED
+  //   No edit/delete  → stock requests are immutable audit records
+  const requestRowActions = [
+    {
+      label: 'Approve',
+      icon: '✅',
+      variant: 'success',
+      hidden: (row) => row.status !== 'PENDING',
+      disabled: (row) => actionLoading === row.id,
+      onClick: handleApprove,
+    },
+    {
+      label: 'Reject',
+      icon: '❌',
+      variant: 'danger',
+      hidden: (row) => row.status !== 'PENDING',
+      disabled: (row) => actionLoading === row.id,
+      onClick: handleReject,
+    },
+    {
+      label: 'Dispatch',
+      icon: '🚚',
+      variant: 'primary',
+      hidden: (row) => row.status !== 'APPROVED',
+      disabled: (row) => actionLoading === row.id,
+      onClick: handleDispatch,
+    },
+    {
+      label: 'Invoice',
+      icon: '🧾',
+      variant: 'ghost',
+      hidden: (row) => row.status !== 'DISPATCHED',
+      onClick: handleViewInvoice,
+    },
+  ];
 
-  const pendingCount = requests.filter(r => r.status === 'PENDING').length;
+  // ── Invoices table columns ──
+  const invoiceColumns = [
+    {
+      key: 'invoiceNumber',
+      header: 'Invoice Number',
+      sortable: true,
+      render: (val) => (
+        <code style={{ fontFamily: 'monospace', fontSize: '12px', background: 'var(--purple-soft)', color: 'var(--purple-dark)', padding: '3px 8px', borderRadius: '4px' }}>
+          {val}
+        </code>
+      ),
+    },
+    {
+      key: 'dealerName',
+      header: 'Dealer',
+      sortable: true,
+      render: (_, row) => row.dealer?.name || '--',
+    },
+    {
+      key: 'invoiceDate',
+      header: 'Date',
+      sortable: true,
+      render: (val) => formatDate(val),
+    },
+    {
+      key: 'status',
+      header: 'Status',
+      sortable: true,
+      align: 'center',
+      render: (val) => (
+        <span style={{ background: '#E8F5E9', color: '#166534', padding: '4px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: 700 }}>
+          {val}
+        </span>
+      ),
+    },
+  ];
+
+  // Invoice row actions: only Print — no edit/delete since invoices are financial records
+  const invoiceRowActions = [
+    {
+      label: 'Print',
+      icon: '🖨',
+      variant: 'ghost',
+      onClick: (row) => printAdminInvoice(row),
+    },
+  ];
 
   return (
     <AdminLayout>
-      <div className="stock-requests-page">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
 
         {/* Header */}
-        <div className="page-header">
-          <h1>Stock Requests</h1>
-          <p>Review dealer stock requests and manage supply invoices.</p>
+        <div>
+          <h1 style={{ fontSize: '26px', fontWeight: 700, color: 'var(--text-dark)', marginBottom: '6px' }}>
+            Stock Requests
+          </h1>
+          <p style={{ fontSize: '14px', color: 'var(--grey-text)' }}>
+            Review dealer stock requests and manage supply invoices.
+          </p>
         </div>
 
-        {actionError && <div className="alert alert-error">{actionError}</div>}
+        {actionError && (
+          <div style={{ background: '#FFEBEE', border: '1px solid #FFCDD2', color: 'var(--error)', padding: '10px 14px', borderRadius: 'var(--radius-sm)', fontSize: '13px' }}>
+            {actionError}
+          </div>
+        )}
 
         {/* Tabs */}
-        <div className="tab-bar">
-          <button
-            className={`tab-btn ${activeTab === 'requests' ? 'active' : ''}`}
-            onClick={() => setActiveTab('requests')}
-          >
-            Requests {pendingCount > 0 && `(${pendingCount} pending)`}
-          </button>
-          <button
-            className={`tab-btn ${activeTab === 'invoices' ? 'active' : ''}`}
-            onClick={() => setActiveTab('invoices')}
-          >
-            Supply Invoices
-          </button>
+        <div style={{ display: 'flex', gap: 0, borderBottom: '2px solid var(--grey-mid)' }}>
+          {[
+            { key: 'requests', label: `Requests${pendingCount > 0 ? ` (${pendingCount} pending)` : ''}` },
+            { key: 'invoices', label: 'Supply Invoices' },
+          ].map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              style={{
+                padding: '12px 24px', fontSize: '14px', fontWeight: 600,
+                color: activeTab === tab.key ? 'var(--purple-main)' : 'var(--grey-text)',
+                background: 'transparent', border: 'none',
+                borderBottom: activeTab === tab.key ? '2px solid var(--purple-main)' : '2px solid transparent',
+                marginBottom: '-2px', cursor: 'pointer', transition: 'all 0.2s',
+              }}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
 
         {/* Requests Tab */}
         {activeTab === 'requests' && (
-          <div className="table-wrapper">
-            <div className="table-header">
-              <h3>All Requests ({filteredRequests.length})</h3>
-              <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                <input
-                  type="text"
-                  placeholder="Search dealer, variant, colour..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="search-input"
-                  style={{ padding: '8px 12px', borderRadius: '6px', border: '1px solid #d1d5db', minWidth: '280px' }}
-                />
-                <select
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                  className="filter-select"
-                  style={{ padding: '8px 12px', borderRadius: '6px', border: '1px solid #d1d5db' }}
-                >
-                  <option value="">All Statuses</option>
-                  <option value="PENDING">Pending</option>
-                  <option value="APPROVED">Approved</option>
-                  <option value="REJECTED">Rejected</option>
-                  <option value="DISPATCHED">Dispatched</option>
-                </select>
-                <button className="btn-refresh" onClick={fetchRequests}>
-                  Refresh
-                </button>
-              </div>
-            </div>
-
-            {requestsLoading ? (
-              <div className="loading-state">Loading requests...</div>
-            ) : filteredRequests.length === 0 ? (
-              <div className="empty-state">
-                {requests.length === 0 ? 'No stock requests found.' : 'No results match your filters.'}
-              </div>
-            ) : (
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>Dealer</th>
-                    <th>Car</th>
-                    <th>Variant</th>
-                    <th>Colour</th>
-                    <th>Qty</th>
-                    <th>Date</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {paginatedRequests.map(req => (
-                    <tr key={req.id}>
-                      <td>{req.dealer?.name}</td>
-                      <td>{req.variant?.car?.modelName || '--'}</td>
-                      <td>{req.variant?.variantName}</td>
-                      <td>{req.colour?.colourName}</td>
-                      <td>{req.requestedQuantity}</td>
-                      <td>{formatDate(req.requestDate)}</td>
-                      <td>
-                        <span className={getStatusClass(req.status)}>
-                          {req.status}
-                        </span>
-                      </td>
-                      <td>
-                        {req.status === 'PENDING' && (
-                          <div className="actions-cell">
-                            <button
-                              className="btn-sm btn-approve"
-                              onClick={() => handleApprove(req.id)}
-                              disabled={actionLoading === req.id}
-                            >
-                              {actionLoading === req.id ? '...' : 'Approve'}
-                            </button>
-                            <button
-                              className="btn-sm btn-reject"
-                              onClick={() => handleReject(req.id)}
-                              disabled={actionLoading === req.id}
-                            >
-                              {actionLoading === req.id ? '...' : 'Reject'}
-                            </button>
-                          </div>
-                        )}
-                        {req.status === 'APPROVED' && (
-                          <button
-                            className="btn-sm btn-dispatch"
-                            onClick={() => handleDispatch(req.id)}
-                            disabled={actionLoading === req.id}
-                          >
-                            {actionLoading === req.id ? '...' : 'Dispatch'}
-                          </button>
-                        )}
-                        {req.status === 'DISPATCHED' && (
-                          <button
-                            className="btn-sm btn-invoice"
-                            onClick={() => handleViewInvoice(req.id)}
-                          >
-                            View Invoice
-                          </button>
-                        )}
-                        {req.status === 'REJECTED' && (
-                          <span style={{ fontSize: '12px', color: 'var(--grey-text)' }}>
-                            No actions
-                          </span>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-
-            {/* Pagination Controls */}
-            {totalPages > 1 && (
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '14px 20px',
-                borderTop: '1px solid var(--grey-mid)',
-                fontSize: '13px',
-                color: 'var(--grey-text)'
-              }}>
-                <span>
-                  Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1}–{Math.min(currentPage * ITEMS_PER_PAGE, filteredRequests.length)} of {filteredRequests.length} requests
-                </span>
-                <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-                  <button
-                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                    disabled={currentPage === 1}
-                    style={{
-                      padding: '6px 12px',
-                      borderRadius: 'var(--radius-sm)',
-                      border: '1.5px solid var(--grey-mid)',
-                      background: currentPage === 1 ? 'var(--grey-light)' : 'var(--white)',
-                      color: currentPage === 1 ? 'var(--grey-text)' : 'var(--purple-main)',
-                      cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
-                      fontWeight: 600,
-                      fontSize: '13px'
-                    }}
-                  >
-                    ← Prev
-                  </button>
-                  {Array.from({ length: totalPages }, (_, i) => i + 1)
-                    .filter(page => page === 1 || page === totalPages || Math.abs(page - currentPage) <= 1)
-                    .reduce((acc, page, idx, arr) => {
-                      if (idx > 0 && arr[idx - 1] !== page - 1) {
-                        acc.push('...');
-                      }
-                      acc.push(page);
-                      return acc;
-                    }, [])
-                    .map((item, idx) =>
-                      item === '...' ? (
-                        <span key={`ellipsis-${idx}`} style={{ padding: '0 4px', color: 'var(--grey-text)' }}>…</span>
-                      ) : (
-                        <button
-                          key={item}
-                          onClick={() => setCurrentPage(item)}
-                          style={{
-                            padding: '6px 11px',
-                            borderRadius: 'var(--radius-sm)',
-                            border: '1.5px solid',
-                            borderColor: currentPage === item ? 'var(--purple-main)' : 'var(--grey-mid)',
-                            background: currentPage === item ? 'var(--purple-main)' : 'var(--white)',
-                            color: currentPage === item ? 'var(--white)' : 'var(--text-dark)',
-                            cursor: 'pointer',
-                            fontWeight: 600,
-                            fontSize: '13px',
-                            minWidth: '34px'
-                          }}
-                        >
-                          {item}
-                        </button>
-                      )
-                    )
-                  }
-                  <button
-                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                    disabled={currentPage === totalPages}
-                    style={{
-                      padding: '6px 12px',
-                      borderRadius: 'var(--radius-sm)',
-                      border: '1.5px solid var(--grey-mid)',
-                      background: currentPage === totalPages ? 'var(--grey-light)' : 'var(--white)',
-                      color: currentPage === totalPages ? 'var(--grey-text)' : 'var(--purple-main)',
-                      cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
-                      fontWeight: 600,
-                      fontSize: '13px'
-                    }}
-                  >
-                    Next →
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
+          <DataTable
+            title="All Stock Requests"
+            subtitle="Approve, reject, or dispatch dealer requests"
+            columns={requestColumns}
+            data={requests}
+            loading={requestsLoading}
+            filters={requestFilters}
+            rowActions={requestRowActions}
+            defaultPageSize={10}
+            pageSizeOptions={[10, 25, 50]}
+            emptyMessage="No stock requests found."
+          />
         )}
 
         {/* Invoices Tab */}
         {activeTab === 'invoices' && (
-          <div className="table-wrapper">
-            <div className="table-header">
-              <h3>All Supply Invoices ({invoices.length})</h3>
-              <button className="btn-refresh" onClick={fetchInvoices}>
-                Refresh
-              </button>
-            </div>
-
-            {invoicesLoading ? (
-              <div className="loading-state">Loading invoices...</div>
-            ) : invoices.length === 0 ? (
-              <div className="empty-state">No invoices generated yet.</div>
-            ) : (
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>Invoice Number</th>
-                    <th>Dealer</th>
-                    <th>Date</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {invoices.map(inv => (
-                    <tr key={inv.id}>
-                      <td>
-                        <span className="invoice-number">
-                          {inv.invoiceNumber}
-                        </span>
-                      </td>
-                      <td>{inv.dealer?.name}</td>
-                      <td>{formatDate(inv.invoiceDate)}</td>
-                      <td>
-                        <span className="status-badge status-approved">
-                          {inv.status}
-                        </span>
-                      </td>
-                      <td>
-                        <button
-                          className="btn-sm btn-invoice"
-                          onClick={() => printAdminInvoice(inv)}
-                        >
-                          Print
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
+          <DataTable
+            title="Supply Invoices"
+            subtitle="All generated supply invoices"
+            columns={invoiceColumns}
+            data={invoices}
+            loading={invoicesLoading}
+            rowActions={invoiceRowActions}
+            defaultPageSize={10}
+            pageSizeOptions={[10, 25, 50]}
+            emptyMessage="No invoices generated yet."
+          />
         )}
 
       </div>
