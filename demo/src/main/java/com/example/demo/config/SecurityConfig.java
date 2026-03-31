@@ -98,7 +98,9 @@ public class SecurityConfig {
 
                 // ── STOCK REQUESTS ──
                 .requestMatchers(HttpMethod.GET, "/api/admin/stock-requests/**").hasAuthority("ROLE_ADMIN")
-                .requestMatchers(HttpMethod.PUT, "/api/admin/stock-requests/*/dispatch").hasAuthority("ROLE_ADMIN") // ✅ NEW
+                .requestMatchers(HttpMethod.PUT, "/api/admin/stock-requests/*/dispatch").hasAuthority("ROLE_ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/admin/stock-requests/*/deliver").hasAuthority("ROLE_ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/admin/stock-requests/*/reject-approved").hasAuthority("ROLE_ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/api/admin/stock-requests/**").hasAuthority("ROLE_ADMIN")
                 .requestMatchers(HttpMethod.GET, "/api/admin/invoices/**").hasAuthority("ROLE_ADMIN")
                 .requestMatchers(HttpMethod.GET, "/api/dealer/stock-requests/**").hasAuthority("ROLE_DEALER")

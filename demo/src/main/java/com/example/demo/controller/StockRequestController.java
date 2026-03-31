@@ -11,6 +11,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 public class StockRequestController {
@@ -75,11 +76,15 @@ public class StockRequestController {
 
     // -------------------------------------------------------
     // PUT /api/admin/stock-requests/{id}/approve
+    // Body: { "approvedQuantity": 3 }
     // -------------------------------------------------------
     @PutMapping("/api/admin/stock-requests/{id}/approve")
-    public ResponseEntity<?> approveRequest(@PathVariable Long id) {
+    public ResponseEntity<?> approveRequest(
+            @PathVariable Long id,
+            @RequestBody(required = false) Map<String, Integer> body) {
         try {
-            SupplyInvoice invoice = stockRequestService.approveRequest(id);
+            Integer approvedQty = (body != null) ? body.get("approvedQuantity") : null;
+            SupplyInvoice invoice = stockRequestService.approveRequest(id, approvedQty);
             return ResponseEntity.ok(invoice);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -87,13 +92,26 @@ public class StockRequestController {
     }
 
     // -------------------------------------------------------
-    // PUT /api/admin/stock-requests/{id}/dispatch
+    // PUT /api/admin/stock-requests/{id}/deliver
     // -------------------------------------------------------
-    @PutMapping("/api/admin/stock-requests/{id}/dispatch")
-    public ResponseEntity<?> dispatchRequest(@PathVariable Long id) {
+    @PutMapping("/api/admin/stock-requests/{id}/deliver")
+    public ResponseEntity<?> deliverRequest(@PathVariable Long id) {
         try {
-            SupplyInvoice invoice = stockRequestService.dispatchRequest(id);
+            SupplyInvoice invoice = stockRequestService.deliverRequest(id);
             return ResponseEntity.ok(invoice);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    // -------------------------------------------------------
+    // PUT /api/admin/stock-requests/{id}/reject-approved
+    // -------------------------------------------------------
+    @PutMapping("/api/admin/stock-requests/{id}/reject-approved")
+    public ResponseEntity<?> rejectApprovedRequest(@PathVariable Long id) {
+        try {
+            StockRequest request = stockRequestService.rejectApprovedRequest(id);
+            return ResponseEntity.ok(request);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -101,6 +119,7 @@ public class StockRequestController {
 
     // -------------------------------------------------------
     // PUT /api/admin/stock-requests/{id}/reject
+    // For rejecting PENDING requests only
     // -------------------------------------------------------
     @PutMapping("/api/admin/stock-requests/{id}/reject")
     public ResponseEntity<?> rejectRequest(@PathVariable Long id) {

@@ -103,10 +103,10 @@ public class StockRequestService {
     }
 
     // -------------------------------------------------------
-    // ADMIN: Approve a request
+    // ADMIN: Approve a request — with partial quantity support
     // -------------------------------------------------------
     @Transactional
-    public SupplyInvoice approveRequest(Long requestId) {
+    public SupplyInvoice approveRequest(Long requestId, Integer approvedQuantity) {
 
         StockRequest request = stockRequestRepository.findById(requestId)
                 .orElseThrow(() -> new RuntimeException("Stock request not found."));
@@ -115,13 +115,39 @@ public class StockRequestService {
             throw new RuntimeException("Only PENDING requests can be approved.");
         }
 
+        // Validate approvedQuantity
+        if (approvedQuantity == null || approvedQuantity <= 0) {
+            throw new RuntimeException("Approved quantity must be greater than zero.");
+        }
+        if (approvedQuantity > request.getRequestedQuantity()) {
+            throw new RuntimeException("Approved quantity cannot exceed requested quantity ("
+                    + request.getRequestedQuantity() + ").");
+        }
+
+        boolean isPartial = approvedQuantity < request.getRequestedQuantity();
+
+        // Set approved quantity on the current request
+        request.setApprovedQuantity(approvedQuantity);
         request.setStatus(AppConstants.STOCK_REQUEST_APPROVED);
         stockRequestRepository.save(request);
 
+        // If partial approval — create a new PENDING request for the remainder
+        if (isPartial) {
+            int remainder = request.getRequestedQuantity() - approvedQuantity;
+            StockRequest remainderRequest = new StockRequest();
+            remainderRequest.setDealer(request.getDealer());
+            remainderRequest.setVariant(request.getVariant());
+            remainderRequest.setColour(request.getColour());
+            remainderRequest.setRequestedQuantity(remainder);
+            remainderRequest.setStatus(AppConstants.STOCK_REQUEST_PENDING);
+            remainderRequest.setNotes("Remaining " + remainder + " unit(s) from partial approval of request #" + requestId);
+            stockRequestRepository.save(remainderRequest);
+        }
+
+        // Generate supply invoice (no inventory update yet — happens on DELIVERED)
         String timestamp = LocalDateTime.now()
                 .format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"));
-        String dealerCode = request.getDealer().getDealerCode()
-                .replace("@", "");
+        String dealerCode = request.getDealer().getDealerCode().replace("@", "");
         String invoiceNumber = "INV-" + dealerCode + "-" + timestamp;
 
         SupplyInvoice invoice = new SupplyInvoice();
@@ -135,19 +161,14 @@ public class StockRequestService {
         item.setInvoice(savedInvoice);
         item.setVariant(request.getVariant());
         item.setColour(request.getColour());
-        item.setQuantity(request.getRequestedQuantity());
+        item.setQuantity(approvedQuantity); // approved qty, not requested
         supplyInvoiceItemRepository.save(item);
-
-        inventoryService.addStock(
-                request.getDealer().getId(),
-                request.getVariant().getId(),
-                request.getColour().getId(),
-                request.getRequestedQuantity()
-        );
 
         auditLogService.log(
             "APPROVE_STOCK_REQUEST",
-            "Stock request #" + requestId + " approved. Invoice: " + invoiceNumber
+            "Stock request #" + requestId + " approved for " + approvedQuantity + " unit(s)"
+            + (isPartial ? " (partial; " + (request.getRequestedQuantity() - approvedQuantity) + " remaining as new request)" : "")
+            + ". Invoice: " + invoiceNumber
             + ". Dealer: " + request.getDealer().getName(),
             null
         );
@@ -156,35 +177,89 @@ public class StockRequestService {
     }
 
     // -------------------------------------------------------
-    // ADMIN: Dispatch a request
+    // ADMIN: Mark as Delivered — THIS is when inventory updates
     // -------------------------------------------------------
     @Transactional
-    public SupplyInvoice dispatchRequest(Long requestId) {
+    public SupplyInvoice deliverRequest(Long requestId) {
         StockRequest request = stockRequestRepository.findById(requestId)
                 .orElseThrow(() -> new RuntimeException("Stock request not found."));
 
         if (!request.getStatus().equals(AppConstants.STOCK_REQUEST_APPROVED)) {
-            throw new RuntimeException("Only APPROVED requests can be dispatched.");
+            throw new RuntimeException("Only APPROVED requests can be marked as Delivered.");
         }
 
-        request.setStatus("DISPATCHED");
+        Integer qtyToAdd = request.getApprovedQuantity() != null
+                ? request.getApprovedQuantity()
+                : request.getRequestedQuantity();
+
+        // NOW update inventory
+        inventoryService.addStock(
+                request.getDealer().getId(),
+                request.getVariant().getId(),
+                request.getColour().getId(),
+                qtyToAdd
+        );
+
+        request.setStatus(AppConstants.STOCK_REQUEST_DELIVERED);
         stockRequestRepository.save(request);
 
-        return supplyInvoiceRepository.findByStockRequestId(requestId)
+        // Update invoice status
+        SupplyInvoice invoice = supplyInvoiceRepository.findByStockRequestId(requestId)
                 .orElseThrow(() -> new RuntimeException("Invoice not found for this request."));
+        invoice.setStatus("DELIVERED");
+        supplyInvoiceRepository.save(invoice);
+
+        auditLogService.log(
+            "DELIVER_STOCK_REQUEST",
+            "Stock request #" + requestId + " delivered. " + qtyToAdd + " unit(s) added to inventory."
+            + " Dealer: " + request.getDealer().getName(),
+            null
+        );
+
+        return invoice;
     }
 
     // -------------------------------------------------------
-    // ADMIN: Reject a request
+    // ADMIN: Reject an APPROVED request (post-approval rejection)
+    // -------------------------------------------------------
+    @Transactional
+    public StockRequest rejectApprovedRequest(Long requestId) {
+        StockRequest request = stockRequestRepository.findById(requestId)
+                .orElseThrow(() -> new RuntimeException("Stock request not found."));
+
+        if (!request.getStatus().equals(AppConstants.STOCK_REQUEST_APPROVED)) {
+            throw new RuntimeException("This action is only available for APPROVED requests.");
+        }
+
+        // Void the invoice
+        supplyInvoiceRepository.findByStockRequestId(requestId).ifPresent(inv -> {
+            inv.setStatus("VOIDED");
+            supplyInvoiceRepository.save(inv);
+        });
+
+        request.setStatus(AppConstants.STOCK_REQUEST_REJECTED);
+        StockRequest saved = stockRequestRepository.save(request);
+
+        auditLogService.log(
+            "REJECT_APPROVED_STOCK_REQUEST",
+            "Approved stock request #" + requestId + " was rejected after approval."
+            + " Dealer: " + request.getDealer().getName(),
+            null
+        );
+
+        return saved;
+    }
+
+    // -------------------------------------------------------
+    // ADMIN: Reject a PENDING request (original behavior)
     // -------------------------------------------------------
     @Transactional
     public StockRequest rejectRequest(Long requestId) {
-
         StockRequest request = stockRequestRepository.findById(requestId)
                 .orElseThrow(() -> new RuntimeException("Stock request not found."));
 
         if (!request.getStatus().equals(AppConstants.STOCK_REQUEST_PENDING)) {
-            throw new RuntimeException("Only PENDING requests can be rejected.");
+            throw new RuntimeException("Only PENDING requests can be rejected via this action.");
         }
 
         auditLogService.log(

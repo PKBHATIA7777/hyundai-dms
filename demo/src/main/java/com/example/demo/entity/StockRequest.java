@@ -17,10 +17,10 @@ public class StockRequest {
     @JoinColumn(name = "dealer_id", nullable = false)
     private Dealer dealer;
 
-   @JsonIgnoreProperties({"availableColours", "hibernateLazyInitializer", "handler"})
-@ManyToOne(fetch = FetchType.EAGER)
-@JoinColumn(name = "variant_id", nullable = false)
-private Variant variant;
+    @JsonIgnoreProperties({"availableColours", "hibernateLazyInitializer", "handler"})
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "variant_id", nullable = false)
+    private Variant variant;
 
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     @ManyToOne(fetch = FetchType.EAGER)
@@ -28,6 +28,10 @@ private Variant variant;
     private Colour colour;
 
     private Integer requestedQuantity;
+
+    // ✅ NEW FIELD ADDED
+    @Column
+    private Integer approvedQuantity;
 
     @Column(nullable = false)
     private String status = "PENDING";
@@ -54,6 +58,10 @@ private Variant variant;
 
     public Integer getRequestedQuantity() { return requestedQuantity; }
     public void setRequestedQuantity(Integer requestedQuantity) { this.requestedQuantity = requestedQuantity; }
+
+    // ✅ NEW GETTER & SETTER
+    public Integer getApprovedQuantity() { return approvedQuantity; }
+    public void setApprovedQuantity(Integer approvedQuantity) { this.approvedQuantity = approvedQuantity; }
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
