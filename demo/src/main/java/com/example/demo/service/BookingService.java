@@ -7,6 +7,7 @@ import com.example.demo.util.AppConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.annotation.Isolation;
 
 import java.util.List;
 
@@ -45,7 +46,9 @@ public class BookingService {
     // -------------------------------------------------------
     // DEALER: Create a booking
     // -------------------------------------------------------
-    @Transactional
+    // REPEATABLE_READ prevents another transaction from modifying
+    // the inventory row between our read and our update (prevents double-booking)
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
     public Booking createBooking(String username, BookingDto dto) {
 
         User user = userRepository.findByUsername(username)
@@ -140,6 +143,12 @@ public class BookingService {
     // -------------------------------------------------------
     // DEALER: Get all their bookings
     // -------------------------------------------------------
+    /**
+     * READ_COMMITTED: prevents dirty reads.
+     * We won't see inventory changes from uncommitted transactions.
+     * Safe for read-only dashboard-style queries.
+     */
+    @Transactional(isolation = Isolation.READ_COMMITTED, readOnly = true)
     public List<Booking> getMyBookings(String username) {
 
         User user = userRepository.findByUsername(username)

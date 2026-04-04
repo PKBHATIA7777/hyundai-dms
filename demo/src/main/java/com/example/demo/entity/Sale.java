@@ -8,7 +8,17 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "sales")
+@Table(
+    name = "sales",
+    indexes = {
+        // Fast lookup of sales by dealer (most common query)
+        @Index(name = "idx_sale_dealer_id", columnList = "dealer_id"),
+        // Fast lookup by date for dashboard revenue queries
+        @Index(name = "idx_sale_date", columnList = "sale_date"),
+        // Composite index for dealer + date range queries
+        @Index(name = "idx_sale_dealer_date", columnList = "dealer_id, sale_date")
+    }
+)
 public class Sale {
 
     @Id

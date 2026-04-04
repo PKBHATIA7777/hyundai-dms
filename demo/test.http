@@ -18,7 +18,7 @@ Content-Type: application/json
 ### Paste your token below after Bearer
 POST http://localhost:8080/api/admin/inventory/add
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTc3Mzk4NDQyOSwiZXhwIjoxNzc0MDcwODI5fQ.a-5UsnWpWSbO9vTN1hPdnJHNVj40xhLJyhZa2OETVf8
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTc3NTE5ODgzMywiZXhwIjoxNzc1Mjg1MjMzfQ.Yz1Tl71EiB72gLU1OJSj7dXIquzvcRcfZt1TyXpBDPg
 
 {
     "dealerId": 2,

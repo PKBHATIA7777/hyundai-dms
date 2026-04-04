@@ -5,7 +5,15 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "leads")
+@Table(
+    name = "leads",
+    indexes = {
+        // Fast filter by dealer + status (pipeline view)
+        @Index(name = "idx_lead_dealer_status", columnList = "dealer_id, status"),
+        // Fast lookup of all leads for a dealer
+        @Index(name = "idx_lead_dealer_id", columnList = "dealer_id")
+    }
+)
 public class Lead {
 
     @Id

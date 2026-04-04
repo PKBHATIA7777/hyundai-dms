@@ -8,6 +8,7 @@ import com.example.demo.repository.DealerRepository;
 import com.example.demo.repository.RoleRepository;
 import com.example.demo.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize; // ✅ NEW IMPORT
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -63,6 +64,7 @@ public class DealerService {
         return String.valueOf(password);
     }
 
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')") // ✅ ADDED
     @Transactional
     public Map<String, Object> createDealer(DealerDto dto) {
 
@@ -114,7 +116,6 @@ public class DealerService {
         response.put("generatedPassword", rawPassword);
         response.put("message", "Dealer and user account created successfully.");
 
-        // ⚠️ Keep null if your audit system allows it, else replace with "SYSTEM"
         auditLogService.log(
                 "CREATE_DEALER",
                 "Dealer created: " + savedDealer.getName() + " (" + dealerCode + ")",
@@ -124,6 +125,7 @@ public class DealerService {
         return response;
     }
 
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')") // ✅ ADDED
     public List<Dealer> getAllDealers() {
         return dealerRepository.findAll();
     }
@@ -148,7 +150,6 @@ public class DealerService {
         return dealerRepository.save(dealer);
     }
 
-    // ✅ FIXED METHOD
     @Transactional
     public Map<String, Object> resetDealerPassword(Long id) {
 
@@ -164,7 +165,6 @@ public class DealerService {
         user.setPassword(passwordEncoder.encode(rawPassword));
         userRepository.save(user);
 
-        // ✅ SAFE audit log (no null username)
         auditLogService.log(
                 "RESET_DEALER_PASSWORD",
                 "Password reset for dealer: " + dealer.getName() + " (" + dealer.getDealerCode() + ")",
@@ -174,13 +174,12 @@ public class DealerService {
         Map<String, Object> response = new HashMap<>();
         response.put("message", "Password reset successfully.");
         response.put("newPassword", rawPassword);
-
-        // ✅ Required for frontend modal
         response.put("username", dealer.getDealerCode());
 
         return response;
     }
 
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')") // ✅ ADDED
     @Transactional
     public Dealer deactivateDealer(Long id) {
         Dealer dealer = dealerRepository.findById(id)

@@ -1,363 +1,316 @@
 import { useState, useEffect } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import AdminLayout from '../../layouts/AdminLayout';
 import { addStock, getInventoryByDealerId } from '../../services/inventoryService';
 import { getAllCars } from '../../services/carService';
 import api from '../../services/api';
-import './InventoryManagement.css';
+import DataTable from '../../components/DataTable';
 
-const InventoryManagement = () => {
-    const [searchParams] = useSearchParams();
-    const navigate = useNavigate();
+const AdminInventoryManagement = () => {
+  const [searchParams] = useSearchParams();
+  const urlDealerId   = searchParams.get('dealerId');
+  const urlDealerName = searchParams.get('dealerName');
 
-    // Read dealerId and dealerName from URL params
-    const urlDealerId = searchParams.get('dealerId');
-    const urlDealerName = searchParams.get('dealerName');
+  const [dealers, setDealers]                   = useState([]);
+  const [selectedDealerId, setSelectedDealerId]   = useState(urlDealerId || '');
+  const [selectedDealerName, setSelectedDealerName] = useState(urlDealerName ? decodeURIComponent(urlDealerName) : '');
 
-    // Dealers dropdown
-    const [dealers, setDealers] = useState([]);
+  const [cars, setCars]                           = useState([]);
+  const [selectedCarId, setSelectedCarId]         = useState('');
+  const [variants, setVariants]                   = useState([]);
+  const [selectedVariantId, setSelectedVariantId] = useState('');
+  const [colours, setColours]                     = useState([]);
+  const [selectedColourId, setSelectedColourId]   = useState('');
+  const [quantity, setQuantity]                   = useState('');
 
-    // Selected dealer
-    const [selectedDealerId, setSelectedDealerId] = useState(urlDealerId || '');
-    const [selectedDealerName, setSelectedDealerName] = useState(urlDealerName || '');
+  const [inventory, setInventory]             = useState([]);
+  const [inventoryLoading, setInventoryLoading] = useState(false);
 
-    // Cascading dropdowns
-    const [cars, setCars] = useState([]);
-    const [selectedCarId, setSelectedCarId] = useState('');
-    const [variants, setVariants] = useState([]);
-    const [selectedVariantId, setSelectedVariantId] = useState('');
-    const [colours, setColours] = useState([]);
-    const [selectedColourId, setSelectedColourId] = useState('');
+  const [formError, setFormError]     = useState('');
+  const [formSuccess, setFormSuccess] = useState('');
+  const [formLoading, setFormLoading] = useState(false);
 
-    // Quantity
-    const [quantity, setQuantity] = useState('');
+  useEffect(() => { fetchDealers(); fetchCars(); }, []);
 
-    // Inventory table
-    const [inventory, setInventory] = useState([]);
-    const [inventoryLoading, setInventoryLoading] = useState(false);
+  useEffect(() => {
+    if (selectedDealerId) fetchInventory(selectedDealerId);
+    else setInventory([]);
+  }, [selectedDealerId]);
 
-    // Form feedback
-    const [formError, setFormError] = useState('');
-    const [formSuccess, setFormSuccess] = useState('');
-    const [formLoading, setFormLoading] = useState(false);
+  useEffect(() => {
+    if (selectedCarId) {
+      const car = cars.find((c) => c.id === Number(selectedCarId));
+      setVariants(car?.variants || []);
+      setSelectedVariantId('');
+      setColours([]);
+      setSelectedColourId('');
+    } else {
+      setVariants([]); setSelectedVariantId('');
+      setColours([]);  setSelectedColourId('');
+    }
+  }, [selectedCarId, cars]);
 
-    // On page load — fetch dealers and cars
-    useEffect(() => {
-        fetchDealers();
-        fetchCars();
-    }, []);
+  useEffect(() => {
+    if (selectedVariantId) {
+      const v = variants.find((v) => v.id === Number(selectedVariantId));
+      setColours(v?.availableColours || []);
+      setSelectedColourId('');
+    } else {
+      setColours([]); setSelectedColourId('');
+    }
+  }, [selectedVariantId, variants]);
 
-    // When dealer is selected — fetch their inventory
-    useEffect(() => {
-        if (selectedDealerId) {
-            fetchInventory(selectedDealerId);
-        } else {
-            setInventory([]);
-        }
-    }, [selectedDealerId]);
+  const fetchDealers = async () => {
+    try { const res = await api.get('/admin/dealers'); setDealers(res.data); }
+    catch { setFormError('Failed to load dealers.'); }
+  };
 
-    // When car is selected — populate variants
-    useEffect(() => {
-        if (selectedCarId) {
-            const selectedCar = cars.find(c => c.id === Number(selectedCarId));
-            setVariants(selectedCar?.variants || []);
-            setSelectedVariantId('');
-            setColours([]);
-            setSelectedColourId('');
-        } else {
-            setVariants([]);
-            setSelectedVariantId('');
-            setColours([]);
-            setSelectedColourId('');
-        }
-    }, [selectedCarId]);
+  const fetchCars = async () => {
+    try { const res = await getAllCars(); setCars(res.data); }
+    catch { setFormError('Failed to load cars.'); }
+  };
 
-    // When variant is selected — populate colours
-    useEffect(() => {
-        if (selectedVariantId) {
-            const selectedVariant = variants.find(v => v.id === Number(selectedVariantId));
-            setColours(selectedVariant?.availableColours || []);
-            setSelectedColourId('');
-        } else {
-            setColours([]);
-            setSelectedColourId('');
-        }
-    }, [selectedVariantId]);
+  const fetchInventory = async (dealerId) => {
+    setInventoryLoading(true);
+    try {
+      const res = await getInventoryByDealerId(dealerId);
+      setInventory(res.data);
+    } catch { setInventory([]); }
+    finally { setInventoryLoading(false); }
+  };
 
-    const fetchDealers = async () => {
-        try {
-            const res = await api.get('/admin/dealers');
-            setDealers(res.data);
-        } catch {
-            setFormError('Failed to load dealers.');
-        }
-    };
+  const handleDealerChange = (e) => {
+    const id = e.target.value;
+    const dealer = dealers.find((d) => d.id === Number(id));
+    setSelectedDealerId(id);
+    setSelectedDealerName(dealer?.name || '');
+    setFormError(''); setFormSuccess('');
+  };
 
-    const fetchCars = async () => {
-        try {
-            const res = await getAllCars();
-            setCars(res.data);
-        } catch {
-            setFormError('Failed to load cars.');
-        }
-    };
+  const handleAddStock = async (e) => {
+    e.preventDefault();
+    setFormError(''); setFormSuccess(''); setFormLoading(true);
+    try {
+      await addStock({
+        dealerId:  Number(selectedDealerId),
+        variantId: Number(selectedVariantId),
+        colourId:  Number(selectedColourId),
+        quantity:  Number(quantity),
+      });
+      setFormSuccess(`Successfully added ${quantity} unit(s) to ${selectedDealerName}.`);
+      setSelectedCarId(''); setSelectedVariantId('');
+      setSelectedColourId(''); setQuantity('');
+      fetchInventory(selectedDealerId);
+    } catch (err) {
+      setFormError(err.response?.data || 'Failed to add stock.');
+    } finally {
+      setFormLoading(false);
+    }
+  };
 
-    const fetchInventory = async (dealerId) => {
-        setInventoryLoading(true);
-        try {
-            const res = await getInventoryByDealerId(dealerId);
-            setInventory(res.data);
-        } catch {
-            setInventory([]);
-        } finally {
-            setInventoryLoading(false);
-        }
-    };
+  // ── Inventory DataTable columns ──
+  // No row actions — inventory rows are not directly editable.
+  // Stock is added via the form above. There is no backend endpoint
+  // to edit or delete individual inventory rows directly.
+  const columns = [
+    {
+      key: 'car',
+      header: 'Car',
+      sortable: true,
+      render: (_, row) => (
+        <span style={{ fontWeight: 600 }}>{row.variant?.car?.modelName || '—'}</span>
+      ),
+    },
+    {
+      key: 'variant',
+      header: 'Variant',
+      sortable: true,
+      render: (_, row) => row.variant?.variantName || '—',
+    },
+    {
+      key: 'colour',
+      header: 'Colour',
+      sortable: true,
+      render: (_, row) => (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{
+            width: '14px', height: '14px', borderRadius: '50%',
+            border: '1px solid var(--grey-mid)', flexShrink: 0,
+            background: row.colour?.colourCode?.startsWith('#') ? row.colour.colourCode : '#ccc',
+          }} />
+          {row.colour?.colourName}
+        </div>
+      ),
+    },
+    {
+      key: 'stockQuantity',
+      header: 'Total Stock',
+      sortable: true,
+      align: 'center',
+    },
+    {
+      key: 'reservedQuantity',
+      header: 'Reserved',
+      sortable: true,
+      align: 'center',
+    },
+    {
+      key: 'available',
+      header: 'Available',
+      sortable: true,
+      align: 'center',
+      render: (_, row) => {
+        const available = row.stockQuantity - row.reservedQuantity;
+        let bg = '#DCFCE7', color = '#166534';
+        if (available === 0) { bg = '#FEE2E2'; color = '#991B1B'; }
+        else if (available <= 2) { bg = '#FEF3C7'; color = '#92400E'; }
+        return (
+          <span style={{ background: bg, color, padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 700 }}>
+            {available}
+          </span>
+        );
+      },
+    },
+  ];
 
-    const handleDealerChange = (e) => {
-        const id = e.target.value;
-        const dealer = dealers.find(d => d.id === Number(id));
-        setSelectedDealerId(id);
-        setSelectedDealerName(dealer?.name || '');
-        setFormError('');
-        setFormSuccess('');
-    };
+  const formFieldStyle = {
+    padding: '10px 14px', border: '1.5px solid var(--grey-mid)',
+    borderRadius: 'var(--radius-sm)', fontSize: '14px',
+    color: 'var(--text-dark)', background: 'var(--grey-light)', width: '100%',
+  };
+  const labelStyle = { fontSize: '13px', fontWeight: 600, color: 'var(--text-mid)', marginBottom: '6px', display: 'block' };
 
-    const handleAddStock = async (e) => {
-        e.preventDefault();
-        setFormError('');
-        setFormSuccess('');
-        setFormLoading(true);
+  return (
+    <AdminLayout>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
 
-        try {
-            await addStock({
-                dealerId: Number(selectedDealerId),
-                variantId: Number(selectedVariantId),
-                colourId: Number(selectedColourId),
-                quantity: Number(quantity)
-            });
+        {/* Header */}
+        <div>
+          <h1 style={{ fontSize: '26px', fontWeight: 700, color: 'var(--text-dark)', marginBottom: '6px' }}>
+            Inventory Management
+          </h1>
+          <p style={{ fontSize: '14px', color: 'var(--grey-text)' }}>
+            Add stock to dealers and monitor inventory levels.
+          </p>
+        </div>
 
-            setFormSuccess(`Successfully added ${quantity} unit(s) to ${selectedDealerName}.`);
-            setSelectedCarId('');
-            setSelectedVariantId('');
-            setSelectedColourId('');
-            setQuantity('');
+        {/* Top Section */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', alignItems: 'flex-start' }}>
 
-            // Refresh inventory table
-            fetchInventory(selectedDealerId);
+          {/* Add Stock Form */}
+          <div style={{ background: 'var(--white)', borderRadius: 'var(--radius-md)', padding: '24px', boxShadow: 'var(--shadow-sm)' }}>
+            <h3 style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-dark)', marginBottom: '18px', paddingBottom: '12px', borderBottom: '1px solid var(--grey-mid)' }}>
+              Add Stock to Dealer
+            </h3>
+            <form onSubmit={handleAddStock} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
 
-        } catch (err) {
-            setFormError(err.response?.data || 'Failed to add stock.');
-        } finally {
-            setFormLoading(false);
-        }
-    };
+              <div>
+                <label style={labelStyle}>Select Dealer *</label>
+                <select value={selectedDealerId} onChange={handleDealerChange} required style={formFieldStyle}>
+                  <option value="">-- Select a dealer --</option>
+                  {dealers.map((d) => (
+                    <option key={d.id} value={d.id}>{d.name} ({d.dealerCode})</option>
+                  ))}
+                </select>
+              </div>
 
-    // Stock badge color logic
-    const getStockBadge = (available) => {
-        if (available === 0) return 'stock-badge stock-zero';
-        if (available <= 2) return 'stock-badge stock-low';
-        return 'stock-badge stock-good';
-    };
+              <div>
+                <label style={labelStyle}>Select Car *</label>
+                <select value={selectedCarId} onChange={(e) => setSelectedCarId(e.target.value)} disabled={!selectedDealerId} required style={{ ...formFieldStyle, opacity: !selectedDealerId ? 0.6 : 1 }}>
+                  <option value="">-- Select a car --</option>
+                  {cars.map((c) => <option key={c.id} value={c.id}>{c.modelName}</option>)}
+                </select>
+              </div>
 
-    return (
-        <AdminLayout>
-            <div className="inventory-page">
+              <div>
+                <label style={labelStyle}>Select Variant *</label>
+                <select value={selectedVariantId} onChange={(e) => setSelectedVariantId(e.target.value)} disabled={!selectedCarId} required style={{ ...formFieldStyle, opacity: !selectedCarId ? 0.6 : 1 }}>
+                  <option value="">-- Select a variant --</option>
+                  {variants.map((v) => (
+                    <option key={v.id} value={v.id}>{v.variantName} — ₹{Number(v.price).toLocaleString('en-IN')}</option>
+                  ))}
+                </select>
+              </div>
 
-                {/* Header */}
-                <div className="page-header">
-                    <h1>Inventory Management</h1>
-                    <p>Add stock to dealers and monitor inventory levels.</p>
+              <div>
+                <label style={labelStyle}>Select Colour *</label>
+                <select value={selectedColourId} onChange={(e) => setSelectedColourId(e.target.value)} disabled={!selectedVariantId} required style={{ ...formFieldStyle, opacity: !selectedVariantId ? 0.6 : 1 }}>
+                  <option value="">-- Select a colour --</option>
+                  {colours.map((c) => (
+                    <option key={c.id} value={c.id}>{c.colourName} ({c.colourCode})</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label style={labelStyle}>Quantity *</label>
+                <input type="number" value={quantity} onChange={(e) => setQuantity(e.target.value)} placeholder="e.g. 5" min="1" required style={formFieldStyle} />
+              </div>
+
+              {formError && (
+                <div style={{ background: '#FFEBEE', border: '1px solid #FFCDD2', color: 'var(--error)', padding: '10px 14px', borderRadius: 'var(--radius-sm)', fontSize: '13px' }}>
+                  {formError}
                 </div>
-
-                {/* Top Section — Form + Dealer Info */}
-                <div className="inventory-top-section">
-
-                    {/* Add Stock Form */}
-                    <div className="section-card">
-                        <h3 className="section-title">Add Stock to Dealer</h3>
-                        <form onSubmit={handleAddStock} className="inline-form">
-
-                            {/* Dealer Dropdown */}
-                            <div className="form-group">
-                                <label>Select Dealer *</label>
-                                <select
-                                    value={selectedDealerId}
-                                    onChange={handleDealerChange}
-                                    required
-                                >
-                                    <option value="">-- Select a dealer --</option>
-                                    {dealers.map(d => (
-                                        <option key={d.id} value={d.id}>
-                                            {d.name} ({d.dealerCode})
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            {/* Car Dropdown */}
-                            <div className="form-group">
-                                <label>Select Car *</label>
-                                <select
-                                    value={selectedCarId}
-                                    onChange={(e) => setSelectedCarId(e.target.value)}
-                                    disabled={!selectedDealerId}
-                                    required
-                                >
-                                    <option value="">-- Select a car --</option>
-                                    {cars.map(c => (
-                                        <option key={c.id} value={c.id}>
-                                            {c.modelName}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            {/* Variant Dropdown */}
-                            <div className="form-group">
-                                <label>Select Variant *</label>
-                                <select
-                                    value={selectedVariantId}
-                                    onChange={(e) => setSelectedVariantId(e.target.value)}
-                                    disabled={!selectedCarId}
-                                    required
-                                >
-                                    <option value="">-- Select a variant --</option>
-                                    {variants.map(v => (
-                                        <option key={v.id} value={v.id}>
-                                            {v.variantName} — ₹{Number(v.price).toLocaleString('en-IN')}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            {/* Colour Dropdown */}
-                            <div className="form-group">
-                                <label>Select Colour *</label>
-                                <select
-                                    value={selectedColourId}
-                                    onChange={(e) => setSelectedColourId(e.target.value)}
-                                    disabled={!selectedVariantId}
-                                    required
-                                >
-                                    <option value="">-- Select a colour --</option>
-                                    {colours.map(c => (
-                                        <option key={c.id} value={c.id}>
-                                            {c.colourName} ({c.colourCode})
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            {/* Quantity */}
-                            <div className="form-group">
-                                <label>Quantity *</label>
-                                <input
-                                    type="number"
-                                    value={quantity}
-                                    onChange={(e) => setQuantity(e.target.value)}
-                                    placeholder="e.g. 5"
-                                    min="1"
-                                    required
-                                />
-                            </div>
-
-                            {formError && <div className="alert alert-error">{formError}</div>}
-                            {formSuccess && <div className="alert alert-success">{formSuccess}</div>}
-
-                            <button
-                                type="submit"
-                                className="btn-primary"
-                                disabled={formLoading}
-                            >
-                                {formLoading ? 'Adding...' : '+ Add Stock'}
-                            </button>
-
-                        </form>
-                    </div>
-
-                    {/* Selected Dealer Info */}
-                    <div className="section-card">
-                        <h3 className="section-title">Selected Dealer</h3>
-                        {selectedDealerName ? (
-                            <div className="dealer-info-box">
-                                <span className="dealer-info-name">{selectedDealerName}</span>
-                                <span className="dealer-info-sub">
-                                    {inventory.length} inventory row(s) currently
-                                </span>
-                            </div>
-                        ) : (
-                            <div className="empty-state">No dealer selected yet.</div>
-                        )}
-                    </div>
-
+              )}
+              {formSuccess && (
+                <div style={{ background: '#E8F5E9', border: '1px solid #C8E6C9', color: 'var(--success)', padding: '10px 14px', borderRadius: 'var(--radius-sm)', fontSize: '13px' }}>
+                  {formSuccess}
                 </div>
+              )}
 
-                {/* Inventory Table */}
-                {selectedDealerId && (
-                    <div className="table-wrapper">
-                        <div className="table-header">
-                            <h3>
-                                Inventory — {selectedDealerName}
-                            </h3>
-                            <button
-                                className="btn-secondary-outline"
-                                onClick={() => fetchInventory(selectedDealerId)}
-                            >
-                                Refresh
-                            </button>
-                        </div>
+              <button
+                type="submit"
+                disabled={formLoading}
+                style={{
+                  padding: '10px 20px', background: 'linear-gradient(135deg, var(--purple-main), var(--purple-light))',
+                  color: 'var(--white)', border: 'none', borderRadius: 'var(--radius-sm)',
+                  fontSize: '14px', fontWeight: 600, cursor: formLoading ? 'not-allowed' : 'pointer',
+                  opacity: formLoading ? 0.6 : 1, alignSelf: 'flex-start',
+                }}
+              >
+                {formLoading ? 'Adding...' : '+ Add Stock'}
+              </button>
+            </form>
+          </div>
 
-                        {inventoryLoading ? (
-                            <div className="loading-state">Loading inventory...</div>
-                        ) : inventory.length === 0 ? (
-                            <div className="empty-state">No stock found for this dealer.</div>
-                        ) : (
-                            <table className="data-table">
-                                <thead>
-                                    <tr>
-                                        <th>Variant</th>
-                                        <th>Colour</th>
-                                        <th>Total Stock</th>
-                                        <th>Reserved</th>
-                                        <th>Available</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {inventory.map(item => (
-                                        <tr key={item.id}>
-                                            <td>{item.variant?.variantName}</td>
-                                            <td>
-                                                <div className="colour-cell">
-                                                    <div
-                                                        className="colour-swatch"
-                                                        style={{
-                                                            background: item.colour?.colourCode?.startsWith('#')
-                                                                ? item.colour.colourCode
-                                                                : '#ccc'
-                                                        }}
-                                                    />
-                                                    {item.colour?.colourName}
-                                                </div>
-                                            </td>
-                                            <td>{item.stockQuantity}</td>
-                                            <td>{item.reservedQuantity}</td>
-                                            <td>
-                                                <span className={getStockBadge(item.stockQuantity - item.reservedQuantity)}>
-                                                    {item.stockQuantity - item.reservedQuantity}
-                                                </span>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        )}
-                    </div>
-                )}
+          {/* Selected Dealer Info */}
+          <div style={{ background: 'var(--white)', borderRadius: 'var(--radius-md)', padding: '24px', boxShadow: 'var(--shadow-sm)' }}>
+            <h3 style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-dark)', marginBottom: '18px', paddingBottom: '12px', borderBottom: '1px solid var(--grey-mid)' }}>
+              Selected Dealer
+            </h3>
+            {selectedDealerName ? (
+              <div style={{ background: 'var(--purple-soft)', border: '1.5px solid var(--purple-border)', borderRadius: 'var(--radius-sm)', padding: '14px 16px' }}>
+                <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--purple-dark)' }}>{selectedDealerName}</div>
+                <div style={{ fontSize: '12px', color: 'var(--purple-main)', marginTop: '4px' }}>
+                  {inventory.length} inventory line{inventory.length !== 1 ? 's' : ''} currently
+                </div>
+              </div>
+            ) : (
+              <div style={{ textAlign: 'center', color: 'var(--grey-text)', padding: '30px', fontSize: '14px' }}>
+                No dealer selected yet.
+              </div>
+            )}
+          </div>
+        </div>
 
-            </div>
-        </AdminLayout>
-    );
+        {/* Inventory DataTable */}
+        {selectedDealerId && (
+          <DataTable
+            title={`Inventory — ${selectedDealerName}`}
+            subtitle="Current stock levels for this dealer"
+            columns={columns}
+            data={inventory}
+            loading={inventoryLoading}
+            defaultPageSize={25}
+            pageSizeOptions={[10, 25, 50]}
+            emptyMessage="No stock found for this dealer."
+            stickyHeader
+          />
+        )}
+
+      </div>
+    </AdminLayout>
+  );
 };
 
-export default InventoryManagement;
+export default AdminInventoryManagement;

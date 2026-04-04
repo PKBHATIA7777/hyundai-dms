@@ -4,7 +4,17 @@ import jakarta.persistence.*;
 import java.util.Date;
 
 @Entity
-@Table(name = "users")
+@Table(
+    name = "users",
+    indexes = {
+        // Index on username for fast login lookup
+        @Index(name = "idx_user_username", columnList = "username"),
+        // Index on email for uniqueness checks
+        @Index(name = "idx_user_email", columnList = "email"),
+        // Index on dealer_id for joining user to dealer
+        @Index(name = "idx_user_dealer_id", columnList = "dealer_id")
+    }
+)
 public class User {
 
     @Id
@@ -36,6 +46,10 @@ public class User {
 
     @Column(name = "lock_time")
     private Date lockTime;
+
+    // NEW: account expiry date for Step 7
+    @Column(name = "account_expiry_date")
+    private Date accountExpiryDate;
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -71,4 +85,9 @@ public class User {
 
     public Date getLockTime() { return lockTime; }
     public void setLockTime(Date lockTime) { this.lockTime = lockTime; }
+
+    public Date getAccountExpiryDate() { return accountExpiryDate; }
+    public void setAccountExpiryDate(Date accountExpiryDate) {
+        this.accountExpiryDate = accountExpiryDate;
+    }
 }

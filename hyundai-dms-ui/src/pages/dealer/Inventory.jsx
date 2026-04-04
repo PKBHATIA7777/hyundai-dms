@@ -1,22 +1,14 @@
 import { useState, useEffect } from 'react';
 import DealerLayout from '../../layouts/DealerLayout';
 import { getMyInventory } from '../../services/inventoryService';
-import './Inventory.css';
+import DataTable from '../../components/DataTable';
 
 const DealerInventory = () => {
   const [inventory, setInventory] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [loading, setLoading]     = useState(true);
+  const [error, setError]         = useState('');
 
-  // ✅ NEW: search + filter + sort
-  const [search, setSearch] = useState('');
-  const [stockFilter, setStockFilter] = useState('');
-  const [sortField, setSortField] = useState('');
-  const [sortDir, setSortDir] = useState('asc');
-
-  useEffect(() => {
-    fetchInventory();
-  }, []);
+  useEffect(() => { fetchInventory(); }, []);
 
   const fetchInventory = async () => {
     setLoading(true);
@@ -30,185 +22,140 @@ const DealerInventory = () => {
     }
   };
 
-  // ✅ Stock badge
-  const getStockBadge = (available) => {
-    if (available === 0) return 'stock-badge stock-zero';
-    if (available <= 2) return 'stock-badge stock-low';
-    return 'stock-badge stock-good';
-  };
+  // ── Columns ──
+  // No row actions — dealer cannot directly modify inventory.
+  // Stock is added by admin; dealer can only request via "Request Stock" page.
+  const columns = [
+    {
+      key: 'car',
+      header: 'Car',
+      sortable: true,
+      render: (_, row) => (
+        <span style={{ fontWeight: 600 }}>{row.variant?.car?.modelName || '—'}</span>
+      ),
+    },
+    {
+      key: 'variant',
+      header: 'Variant',
+      sortable: true,
+      render: (_, row) => row.variant?.variantName || '—',
+    },
+    {
+      key: 'colour',
+      header: 'Colour',
+      sortable: true,
+      render: (_, row) => (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{
+            width: '14px', height: '14px', borderRadius: '50%',
+            border: '1px solid var(--grey-mid)', flexShrink: 0,
+            background: row.colour?.colourCode?.startsWith('#') ? row.colour.colourCode : '#ccc',
+          }} />
+          {row.colour?.colourName}
+        </div>
+      ),
+    },
+    {
+      key: 'stockQuantity',
+      header: 'Total Stock',
+      sortable: true,
+      align: 'center',
+    },
+    {
+      key: 'reservedQuantity',
+      header: 'Reserved',
+      sortable: true,
+      align: 'center',
+      render: (val) => (
+        <span style={{ color: val > 0 ? 'var(--warning)' : 'var(--grey-text)' }}>{val}</span>
+      ),
+    },
+    {
+      key: 'available',
+      header: 'Available',
+      sortable: true,
+      align: 'center',
+      render: (_, row) => {
+        const available = row.stockQuantity - row.reservedQuantity;
+        let bg = '#DCFCE7', color = '#166534';
+        if (available === 0) { bg = '#FEE2E2'; color = '#991B1B'; }
+        else if (available <= 2) { bg = '#FEF3C7'; color = '#92400E'; }
+        return (
+          <span style={{ background: bg, color, padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 700 }}>
+            {available}
+          </span>
+        );
+      },
+    },
+  ];
 
-  // ✅ Filter logic
-  const filtered = inventory.filter(item => {
-    const q = search.toLowerCase();
+  // ── Filters ──
+  const filters = [
+    {
+      key: 'stockLevel',
+      label: 'Stock Level',
+      type: 'select',
+      options: [
+        { label: 'Available (>0)', value: 'available' },
+        { label: 'Low Stock (≤2)', value: 'low' },
+        { label: 'Out of Stock', value: 'out' },
+      ],
+    },
+  ];
 
-    const matchSearch =
-      !q ||
-      item.variant?.car?.modelName?.toLowerCase().includes(q) ||
-      item.variant?.variantName?.toLowerCase().includes(q) ||
-      item.colour?.colourName?.toLowerCase().includes(q);
-
-    const available = item.stockQuantity - item.reservedQuantity;
-
-    const matchStock =
-      !stockFilter ||
-      (stockFilter === 'low' && available > 0 && available <= 2) ||
-      (stockFilter === 'out' && available === 0) ||
-      (stockFilter === 'available' && available > 0);
-
-    return matchSearch && matchStock;
-  });
-
-  // ✅ Sorting logic
-  const handleSort = (field) => {
-    if (sortField === field) {
-      setSortDir(prev => (prev === 'asc' ? 'desc' : 'asc'));
-    } else {
-      setSortField(field);
-      setSortDir('asc');
-    }
-  };
-
-  const sortArrow = (field) => {
-    if (sortField !== field) return '';
-    return sortDir === 'asc' ? ' ↑' : ' ↓';
-  };
-
-  const sorted = [...filtered].sort((a, b) => {
-    const getValue = (item) => {
-      switch (sortField) {
-        case 'car':
-          return item.variant?.car?.modelName || '';
-        case 'variant':
-          return item.variant?.variantName || '';
-        case 'colour':
-          return item.colour?.colourName || '';
-        case 'stock':
-          return item.stockQuantity;
-        case 'reserved':
-          return item.reservedQuantity;
-        case 'available':
-          return item.stockQuantity - item.reservedQuantity;
-        default:
-          return '';
-      }
-    };
-
-    const valA = getValue(a);
-    const valB = getValue(b);
-
-    if (typeof valA === 'number') {
-      return sortDir === 'asc' ? valA - valB : valB - valA;
-    } else {
-      return sortDir === 'asc'
-        ? valA.localeCompare(valB)
-        : valB.localeCompare(valA);
-    }
-  });
+  // Custom filter logic — we need to pre-process the data for the stock level filter
+  // DataTable filters match exact keys; we enrich data with a computed field
+  const enrichedInventory = inventory.map((item) => ({
+    ...item,
+    stockLevel: (() => {
+      const avail = item.stockQuantity - item.reservedQuantity;
+      if (avail === 0) return 'out';
+      if (avail <= 2)  return 'low';
+      return 'available';
+    })(),
+  }));
 
   return (
     <DealerLayout>
-      <div className="dealer-inventory-page">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
 
-        <div className="page-header">
-          <h1>My Inventory</h1>
-          <p>View all stock levels for your dealership.</p>
+        {/* Header */}
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
+          <div>
+            <h1 style={{ fontSize: '26px', fontWeight: 700, color: 'var(--text-dark)', marginBottom: '6px' }}>
+              My Inventory
+            </h1>
+            <p style={{ fontSize: '14px', color: 'var(--grey-text)' }}>
+              View all stock levels for your dealership.
+            </p>
+          </div>
+          <button
+            onClick={fetchInventory}
+            style={{ background: 'transparent', border: '1.5px solid var(--purple-border)', color: 'var(--purple-main)', padding: '8px 16px', borderRadius: 'var(--radius-sm)', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}
+          >
+            ↻ Refresh
+          </button>
         </div>
 
-        <div className="table-wrapper">
-          <div className="table-header">
-            <h3>All Stock Items ({filtered.length})</h3>
-            <button className="btn-refresh" onClick={fetchInventory}>
-              Refresh
-            </button>
+        {error && (
+          <div style={{ background: '#FFEBEE', border: '1px solid #FFCDD2', color: 'var(--error)', padding: '10px 14px', borderRadius: 'var(--radius-sm)', fontSize: '13px' }}>
+            {error}
           </div>
+        )}
 
-          {/* ✅ NEW: Filter Bar */}
-          <div className="filter-bar">
-            <input
-              type="text"
-              placeholder="Search by car, variant, colour..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-
-            <select
-              value={stockFilter}
-              onChange={(e) => setStockFilter(e.target.value)}
-            >
-              <option value="">All Stock</option>
-              <option value="available">Available</option>
-              <option value="low">Low Stock (≤2)</option>
-              <option value="out">Out of Stock</option>
-            </select>
-          </div>
-
-          {loading ? (
-            <div className="loading-state">Loading inventory...</div>
-          ) : error ? (
-            <div className="empty-state">{error}</div>
-          ) : inventory.length === 0 ? (
-            <div className="empty-state">No stock found for your dealership.</div>
-          ) : (
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th onClick={() => handleSort('car')}>
-                    Car {sortArrow('car')}
-                  </th>
-                  <th onClick={() => handleSort('variant')}>
-                    Variant {sortArrow('variant')}
-                  </th>
-                  <th onClick={() => handleSort('colour')}>
-                    Colour {sortArrow('colour')}
-                  </th>
-                  <th onClick={() => handleSort('stock')}>
-                    Total Stock {sortArrow('stock')}
-                  </th>
-                  <th onClick={() => handleSort('reserved')}>
-                    Reserved {sortArrow('reserved')}
-                  </th>
-                  <th onClick={() => handleSort('available')}>
-                    Available {sortArrow('available')}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {sorted.map(item => {
-                  const available = item.stockQuantity - item.reservedQuantity;
-
-                  return (
-                    <tr key={item.id}>
-                      <td style={{ fontWeight: 600 }}>
-                        {item.variant?.car?.modelName || '—'}
-                      </td>
-                      <td>{item.variant?.variantName}</td>
-                      <td>
-                        <div className="colour-cell">
-                          <div
-                            className="colour-swatch"
-                            style={{
-                              background: item.colour?.colourCode?.startsWith('#')
-                                ? item.colour.colourCode
-                                : '#ccc'
-                            }}
-                          />
-                          {item.colour?.colourName}
-                        </div>
-                      </td>
-                      <td>{item.stockQuantity}</td>
-                      <td>{item.reservedQuantity}</td>
-                      <td>
-                        <span className={getStockBadge(available)}>
-                          {available}
-                        </span>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          )}
-        </div>
+        {/* DataTable — no row actions (read-only inventory view) */}
+        <DataTable
+          title="All Stock Items"
+          subtitle={`${inventory.length} stock lines across all variants`}
+          columns={columns}
+          data={enrichedInventory}
+          loading={loading}
+          filters={filters}
+          defaultPageSize={25}
+          pageSizeOptions={[10, 25, 50]}
+          emptyMessage="No stock found for your dealership. Contact admin to add inventory."
+          stickyHeader
+        />
 
       </div>
     </DealerLayout>

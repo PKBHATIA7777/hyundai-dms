@@ -8,6 +8,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
@@ -22,15 +23,20 @@ public class UserDetailsImpl implements UserDetails {
     private Collection<? extends GrantedAuthority> authorities;
     private Boolean accountNonLocked;
 
+    // NEW: store expiry date
+    private Date accountExpiryDate;
+
     public UserDetailsImpl(Long id, String username, String email, String password,
                            Collection<? extends GrantedAuthority> authorities,
-                           Boolean accountNonLocked) {
+                           Boolean accountNonLocked,
+                           Date accountExpiryDate) {
         this.id = id;
         this.username = username;
         this.email = email;
         this.password = password;
         this.authorities = authorities;
         this.accountNonLocked = accountNonLocked;
+        this.accountExpiryDate = accountExpiryDate;
     }
 
     public static UserDetailsImpl build(User user) {
@@ -43,7 +49,8 @@ public class UserDetailsImpl implements UserDetails {
                 user.getEmail(),
                 user.getPassword(),
                 authorities,
-                user.getAccountNonLocked()
+                user.getAccountNonLocked(),
+                user.getAccountExpiryDate()  // NEW
         );
     }
 
@@ -59,8 +66,16 @@ public class UserDetailsImpl implements UserDetails {
     @Override
     public String getUsername() { return username; }
 
+    /**
+     * Account is non-expired if:
+     * - No expiry date is set (null = never expires), OR
+     * - Expiry date is in the future
+     */
     @Override
-    public boolean isAccountNonExpired() { return true; }
+    public boolean isAccountNonExpired() {
+        if (accountExpiryDate == null) return true;
+        return accountExpiryDate.after(new Date());
+    }
 
     @Override
     public boolean isAccountNonLocked() { return accountNonLocked; }
